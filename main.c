@@ -32,14 +32,12 @@ int main(int argc, char *argv[]) {
     // Read the file contents into memory
     ssize_t _bytes_read = read(_fd, _buffer, _file_size);
     if (_bytes_read != _file_size) {
-		_ww_print_errors(_WW_ERR_READFILE);
         free(_buffer);
         close(_fd);
-        return 1;
+		_ww_print_errors(_WW_ERR_READFILE);
     }
 
     close(_fd);
-
     free(_buffer);
 
     return 0;
