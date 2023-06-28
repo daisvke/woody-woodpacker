@@ -1,6 +1,6 @@
 #include "woody-woodpacker.h"
 
-int	print_errors(const char *err_msg)
+int	_ww_print_errors(const char *err_msg)
 {
 	fprintf(stderr, _WW_RED_COLOR "Error: %s\n" _WW_RESET_COLOR);
 	return 1;
@@ -13,8 +13,9 @@ int main() {
         return 1;
     }
 
-    // Determine the file size
+    // Determine the file size by moving the cursor till the end
     off_t	file_size = lseek(fd, 0, SEEK_END);
+	// Put back the cursor at the beginning of the file
     lseek(fd, 0, SEEK_SET);
 
     // Allocate memory buffer
@@ -35,6 +36,7 @@ int main() {
     }
 
     close(fd);
+
     free(buffer);
 
     return 0;

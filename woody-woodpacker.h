@@ -1,10 +1,10 @@
 #ifndef WOODY-WOODPACKER_H
 # define  WOODY-WOODPACKER_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <fcntl.h>
+# include <unistd.h>
 
 /*  Colors */
 # define _WW_RED_COLOR		"\033[31m"
