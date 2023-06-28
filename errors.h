@@ -5,11 +5,13 @@
 { \
 	"Failed to open the binary file", \
 	"Failed to allocate memory", \
-	"Failed to read the file" \
+	"Failed to read the file", \
+	"Wrong number of arguments" \
 }
 
-# define _WW_ERR_OPENBIN	0
-# define _WW_ERR_ALLOCMEM	1
-# define _WW_ERR_READFILE	2
+# define _WW_ERR_OPENBIN		0
+# define _WW_ERR_ALLOCMEM		1
+# define _WW_ERR_READFILE		2
+# define _WW_ERR_BADARGNBR		3
 
 #endif

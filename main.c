@@ -11,8 +11,10 @@ int	_ww_print_errors(int err_code)
 	exit(1);
 }
 
-int main() {
-    int	_fd = open("input_binary.bin", O_RDONLY);
+int main(int argc, char *argv[]) {
+	if (argc != 2) _ww_print_errors(_WW_ERR_BADARGNBR);
+
+    int	_fd = open(argv[1], O_RDONLY);
     if (_fd < -1) _ww_print_errors(_WW_ERR_OPENBIN);
 	
 	// Determine the file size by moving the cursor till the end
