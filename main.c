@@ -1,4 +1,4 @@
-#include "woody-woodpacker.h"
+#include "ww.h"
 
 int	_ww_print_errors(const char *err_msg)
 {
