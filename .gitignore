@@ -1,5 +1,5 @@
 # Temp files
-.*.?.sw?
+.*.*.sw?
 
 # Prerequisites
 *.d

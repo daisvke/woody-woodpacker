@@ -6,6 +6,8 @@
 # include <fcntl.h>
 # include <unistd.h>
 
+# include "errors.h"
+
 /*  Colors */
 # define _WW_RED_COLOR		"\033[31m"
 # define _WW_GREEN_COLOR	"\033[32m"
