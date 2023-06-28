@@ -1,5 +1,5 @@
-#ifndef WOODY-WOODPACKER_H
-# define  WOODY-WOODPACKER_H
+#ifndef WOODY_WOODPACKER_H
+# define  WOODY_WOODPACKER_H
 
 # include <stdio.h>
 # include <stdlib.h>

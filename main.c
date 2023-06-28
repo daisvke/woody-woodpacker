@@ -2,42 +2,42 @@
 
 int	_ww_print_errors(const char *err_msg)
 {
-	fprintf(stderr, _WW_RED_COLOR "Error: %s\n" _WW_RESET_COLOR);
+	fprintf(stderr, _WW_RED_COLOR "Error: %s\n" _WW_RESET_COLOR, err_msg);
 	return 1;
 }
 
 int main() {
-    int	fd = open("input_binary.bin", O_RDONLY);
-    if (fd < -1) {
+    int	_fd = open("input_binary.bin", O_RDONLY);
+    if (_fd < -1) {
         fprintf(stderr, "Failed to open the binary file.\n");
         return 1;
     }
 
     // Determine the file size by moving the cursor till the end
-    off_t	file_size = lseek(fd, 0, SEEK_END);
+    off_t	_file_size = lseek(_fd, 0, SEEK_END);
 	// Put back the cursor at the beginning of the file
-    lseek(fd, 0, SEEK_SET);
+    lseek(_fd, 0, SEEK_SET);
 
     // Allocate memory buffer
-    unsigned char*	buffer = (unsigned char*)malloc(file_size);
-    if (buffer == NULL) {
+    unsigned char*	_buffer = (unsigned char*)malloc(_file_size);
+    if (_buffer == NULL) {
         printf("Failed to allocate memory.\n");
-        close(fd);
+        close(_fd);
         return 1;
     }
 
     // Read the file contents into memory
-    ssize_t bytes_read = read(fd, buffer, file_size);
-    if (bytes_read != file_size) {
+    ssize_t _bytes_read = read(_fd, _buffer, _file_size);
+    if (_bytes_read != _file_size) {
         printf("Failed to read the file.\n");
-        free(buffer);
-        close(fd);
+        free(_buffer);
+        close(_fd);
         return 1;
     }
 
-    close(fd);
+    close(_fd);
 
-    free(buffer);
+    free(_buffer);
 
     return 0;
 }
