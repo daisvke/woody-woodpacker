@@ -1,7 +1,8 @@
 #include "ww.h"
 
-// This function exits from the program so make sure you do
-// what you need to do before calling it.
+unsigned char*	_buffer;
+off_t	_file_size;
+
 int	_ww_print_errors(int err_code)
 {
 	const char	*err_msg_array[] = _WW_ERROR_MSG_ARRAY;
@@ -10,43 +11,39 @@ int	_ww_print_errors(int err_code)
 		_WW_RED_COLOR "Error: %s.\n" _WW_RESET_COLOR,
 		err_msg_array[err_code]
 	);
-	exit(1);
-}
-#define EI_CLASS    4
-#define ELFCLASS64  2
-
-int is_elf_64(const char* filename) {
-    int file = open(filename, O_RDONLY);
-    if (file == -1) {
-        perror("Failed to open file");
-        return 0;
-    }
-
-    // Read the first 5 bytes of the file to access the ELF identification
-    uint8_t ident[EI_CLASS + 1];
-    if (read(file, ident, EI_CLASS + 1) != EI_CLASS + 1) {
-        close(file);
-        return 0;
-    }
-
-    close(file);
-
-    // Check if the file has the correct ELF identification for a 64-bit file
-    if (ident[0] == 0x7F && ident[1] == 'E' && ident[2] == 'L' && ident[3] == 'F' && ident[EI_CLASS] == ELFCLASS64) {
-        return 1;
-    }
-
-    return 0;
+	return 1;
 }
 
-int main(int argc, char *argv[]) {
-	if (argc != 2) _ww_print_errors(_WW_ERR_BADARGNBR);
+/*
+    We grab the e_ident field of the mapped data to get the architecture (32-bit or 64-bit)
+    of the file.
 
-    int	_fd = open(argv[1], O_RDONLY);
-    if (_fd < 0) _ww_print_errors(_WW_ERR_OPENBIN);
+    e_ident: This field is an array of bytes that identifies the file as an ELF file.
+    It contains specific values at predefined offsets to signify the ELF format version,
+    class (32-bit or 64-bit), endianness, OS ABI, and more.
+
+    First fields of e_ident:
+    1. EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3 (4 bytes): These four bytes form the magic number
+        and are used to identify an ELF file. The values are usually 0x7F, 'E', 'L', and 'F'.
+    2. EI_CLASS (1 byte): This byte specifies the architecture of the file.
+*/
+bool _ww_is_elf64(unsigned char* _buffer) {
+    Elf64_Ehdr  elf_header;
+    _ww_memcpy(&elf_header, _buffer, sizeof(Elf64_Ehdr));
+
+    // We get to EI_CLASS by moving forward for 4 bytes (= 1st field's size of e_ident)
+    if (elf_header.e_ident[_WW_EI_CLASS] != _WW_ELFCLASS64)
+       return false;
+    return true;
+}
+
+int _ww_map_file_into_memory(const char *filename)
+{
+    int	_fd = open(filename, O_RDONLY);
+    if (_fd < 0) return _ww_print_errors(_WW_ERR_OPENBIN);
 	
 	// Determine the file size by moving the cursor till the end
-    off_t	_file_size = lseek(_fd, 0, SEEK_END);
+    _file_size = lseek(_fd, 0, SEEK_END);
 	// Put back the cursor at the beginning of the file
     lseek(_fd, 0, SEEK_SET);
 
@@ -56,20 +53,29 @@ int main(int argc, char *argv[]) {
 		modifications made to the mapped memory will not be visible
 		to other processes mapping the same file		
 	*/
-    unsigned char*	_buffer = 
-		mmap(NULL, _file_size, PROT_READ, MAP_PRIVATE, _fd, 0);
+    _buffer = mmap(NULL, _file_size, PROT_READ, MAP_PRIVATE, _fd, 0);
     if (_buffer == MAP_FAILED) {
         close(_fd);
-		_ww_print_errors(_WW_ERR_ALLOCMEM);
+		return _ww_print_errors(_WW_ERR_ALLOCMEM);
     }
+    close(_fd); /* No need to keep the fd since the file is mapped */
+    
+    if (_ww_is_elf64(_buffer) == false)
+        return _ww_print_errors(_WW_ERR_NOT64BITELF);    
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
+	if (argc != 2) return _ww_print_errors(_WW_ERR_BADARGNBR);
+
+    if (_ww_map_file_into_memory(argv[1]) == _WW_ERROR) return 1;
 
 	// Here process the file loaded into memory
 
+    // Unmap the file from memory
     if (munmap(_buffer, _file_size) < 0) {
-    	close(_fd);
-		_ww_print_errors(_WW_ERR_MUNMAP);
+		return _ww_print_errors(_WW_ERR_MUNMAP);
 	}
-    close(_fd);
 
     return 0;
 }

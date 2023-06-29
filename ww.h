@@ -6,7 +6,10 @@
 # include <fcntl.h>
 # include <unistd.h>
 # include <stdint.h>
-#include <sys/mman.h>
+# include <sys/mman.h>		// For mapping 
+# include <elf.h>			// For ELF header
+# include <stdbool.h>
+
 # include "errors.h"
 
 /*  Colors */
@@ -17,5 +20,12 @@
 
 /* Return */
 # define _WW_ERROR		1
+
+/* ELF header */
+enum	e_elf_header
+{
+	_WW_EI_CLASS    = 4,
+	_WW_ELFCLASS64  = 2
+};
 
 #endif
