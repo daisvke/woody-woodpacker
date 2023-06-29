@@ -25,8 +25,8 @@ int main(int argc, char *argv[]) {
     // Allocate memory buffer
     unsigned char*	_buffer = (unsigned char*)malloc(_file_size);
     if (_buffer == NULL) {
-		_ww_print_errors(_WW_ERR_ALLOCMEM);
         close(_fd);
+		_ww_print_errors(_WW_ERR_ALLOCMEM);
     }
 
     // Read the file contents into memory
