@@ -1,5 +1,7 @@
 #include "ww.h"
 
+// This function exits from the program so make sure you do
+// what you need to do before calling it.
 int	_ww_print_errors(int err_code)
 {
 	const char	*err_msg_array[] = _WW_ERROR_MSG_ARRAY;
