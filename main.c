@@ -5,11 +5,11 @@ off_t	_file_size;
 
 int	_ww_print_errors(int err_code)
 {
-	const char	*err_msg_array[] = _WW_ERROR_MSG_ARRAY;
+	const char	*_err_msg_array[] = _WW_ERROR_MSG_ARRAY;
 	fprintf(
 		stderr,
 		_WW_RED_COLOR "Error: %s.\n" _WW_RESET_COLOR,
-		err_msg_array[err_code]
+		_err_msg_array[err_code]
 	);
 	return 1;
 }
@@ -28,11 +28,11 @@ int	_ww_print_errors(int err_code)
     2. EI_CLASS (1 byte): This byte specifies the architecture of the file.
 */
 bool _ww_is_elf64(unsigned char* _buffer) {
-    Elf64_Ehdr  elf_header;
-    _ww_memcpy(&elf_header, _buffer, sizeof(Elf64_Ehdr));
+    Elf64_Ehdr  _elf_header;
+    _ww_memcpy(&_elf_header, _buffer, sizeof(Elf64_Ehdr));
 
     // We get to EI_CLASS by moving forward for 4 bytes (= 1st field's size of e_ident)
-    if (elf_header.e_ident[_WW_EI_CLASS] != _WW_ELFCLASS64)
+    if (_elf_header.e_ident[_WW_EI_CLASS] != _WW_ELFCLASS64)
        return false;
     return true;
 }
@@ -44,8 +44,9 @@ int _ww_map_file_into_memory(const char *filename)
 	
 	// Determine the file size by moving the cursor till the end
     _file_size = lseek(_fd, 0, SEEK_END);
+    if (_file_size < 0) _ww_print_errors(_WW_ERR_RLSEEK);
 	// Put back the cursor at the beginning of the file
-    lseek(_fd, 0, SEEK_SET);
+    if (lseek(_fd, 0, SEEK_SET < 0)) _ww_print_errors(_WW_ERR_RLSEEK);
 
     /* Map the file into memory
 		- PROT_READ: read-only
@@ -59,7 +60,7 @@ int _ww_map_file_into_memory(const char *filename)
 		return _ww_print_errors(_WW_ERR_ALLOCMEM);
     }
     close(_fd); /* No need to keep the fd since the file is mapped */
-    
+
     if (_ww_is_elf64(_buffer) == false)
         return _ww_print_errors(_WW_ERR_NOT64BITELF);    
     return 0;
