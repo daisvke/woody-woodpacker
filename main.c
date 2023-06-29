@@ -44,9 +44,9 @@ int _ww_map_file_into_memory(const char *filename)
 	
 	// Determine the file size by moving the cursor till the end
     _file_size = lseek(_fd, 0, SEEK_END);
-    if (_file_size < 0) _ww_print_errors(_WW_ERR_RLSEEK);
+    if (_file_size < 0) return _ww_print_errors(_WW_ERR_RLSEEK);
 	// Put back the cursor at the beginning of the file
-    if (lseek(_fd, 0, SEEK_SET < 0)) _ww_print_errors(_WW_ERR_RLSEEK);
+    if (lseek(_fd, 0, SEEK_SET < 0)) return _ww_print_errors(_WW_ERR_RLSEEK);
 
     /* Map the file into memory
 		- PROT_READ: read-only
