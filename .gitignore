@@ -38,6 +38,7 @@
 *.i*86
 *.x86_64
 *.hex
+woody_woodpacker
 
 # Debug files
 *.dSYM/
