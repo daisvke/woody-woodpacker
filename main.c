@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 	if (argc != 2) _ww_print_errors(_WW_ERR_BADARGNBR);
 
     int	_fd = open(argv[1], O_RDONLY);
-    if (_fd < -1) _ww_print_errors(_WW_ERR_OPENBIN);
+    if (_fd < 0) _ww_print_errors(_WW_ERR_OPENBIN);
 	
 	// Determine the file size by moving the cursor till the end
     off_t	_file_size = lseek(_fd, 0, SEEK_END);
