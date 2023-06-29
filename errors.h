@@ -9,9 +9,12 @@
 	"Wrong number of arguments" \
 }
 
-# define _WW_ERR_OPENBIN		0
-# define _WW_ERR_ALLOCMEM		1
-# define _WW_ERR_READFILE		2
-# define _WW_ERR_BADARGNBR		3
+enum	_ww_e_errors
+{
+	_WW_ERR_OPENBIN,
+	_WW_ERR_ALLOCMEM,		
+	_WW_ERR_READFILE,		
+	_WW_ERR_BADARGNBR,		
+};
 
 #endif

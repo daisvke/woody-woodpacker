@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Read the file contents into memory
-    ssize_t _bytes_read = read(_fd, _buffer, _file_size);
+    ssize_t	_bytes_read = read(_fd, _buffer, _file_size);
     if (_bytes_read != _file_size) {
         free(_buffer);
         close(_fd);
