@@ -2,6 +2,7 @@
 #       TITLE                                                                  #
 # **************************************************************************** #
 NAME = woody_woodpacker
+OUTFILE = woody
 
 # **************************************************************************** #
 #       COMMANDS                                                               #
@@ -51,11 +52,11 @@ clean:
 	rm -rf objs
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(NAME) $(OUTFILE)
 
 re: fclean all
 
 # **************************************************************************** #
 #       PHONY                                                                  #
 # **************************************************************************** #
-.PHONY: all clean fclean re test debug
+.PHONY: all clean fclean re debug
