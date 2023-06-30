@@ -10,7 +10,7 @@
 	"Failed to read the file", \
 	"Wrong number of arguments", \
 	"munmap: Failed to unmap the file", \
-	"Given file is not 64 ELF", \
+	"File architecture not suported. x86_64 only", \
 	"lseek: Failed to read file" \
 }
 
