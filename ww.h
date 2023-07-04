@@ -1,5 +1,5 @@
 #ifndef WOODY_WOODPACKER_H
-# define  WOODY_WOODPACKER_H
+# define WOODY_WOODPACKER_H
 
 # include <stdio.h>
 # include <stdlib.h>
@@ -21,5 +21,13 @@
 
 /* Return */
 # define _WW_ERROR		1
+
+/* String header for output file
+	This header is an indication that the file has
+	been encrypted by this program
+*/
+# define _WW_PROG_HEADER	"....WOODY....\n"
+
+size_t		_ww_strlen(const char *s);
 
 #endif

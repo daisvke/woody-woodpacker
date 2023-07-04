@@ -1,7 +1,7 @@
 #include "ww.h"
 
 unsigned char*	_buffer;
-off_t	_file_size;
+off_t	        _file_size;
 
 int	_ww_print_errors(int err_code)
 {

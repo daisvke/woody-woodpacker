@@ -13,3 +13,13 @@ void    *_ww_memcpy(void *dest, const void *src, size_t n)
                 *d++ = *s++;
         return (dest);
 }
+
+size_t  _ww_strlen(const char *s)
+{
+        size_t  i;
+
+        i = 0;
+        while (s[i])
+                i++;
+        return (i);
+}
