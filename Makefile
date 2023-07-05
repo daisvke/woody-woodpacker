@@ -9,6 +9,9 @@ OUTFILE	= woody
 # **************************************************************************** #
 CC = cc
 
+ASM		= nasm $(ASFLAGS)
+ASFLAGS	= -f elf64
+
 # **************************************************************************** #
 #       FLAGS                                                                  #
 # **************************************************************************** #
@@ -44,12 +47,16 @@ ASM_OBJS		= $(addprefix $(ASM_OBJS_DIR), $(ASM_SRCS_FILES:.s=.o))
 #       RULES                                                                  #
 # **************************************************************************** #
 
+$(ASM_OBJS_DIR)%.o : $(ASM_SRCS_DIR)%.s
+	mkdir -p $(ASM_OBJS_DIR)
+	$(ASM) $< -o $@
+
 $(OBJS_DIR)%.o : $(SRCS_DIR)%.c $(INCS)
 	mkdir -p $(OBJS_DIR)
 	$(CC) -I. -c $(CFLAGS) $< -o $@
 
-$(NAME) : $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+$(NAME) : $(OBJS) $(ASM_OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(ASM_OBJS) -o $(NAME)
 
 all: $(NAME)
 
@@ -57,7 +64,7 @@ debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
 
 clean:
-	rm -rf $(OBJS_DIR)
+	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR)
 
 fclean: clean
 	rm -f $(NAME) $(OUTFILE)
