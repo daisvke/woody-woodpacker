@@ -12,6 +12,23 @@ Thus, encryption and compression of a packer allow to bypass this behavior by ob
 ## Technical aspects
 # Two packers
 
+Original Packer                                Final Packer
++-------------------------+                   +-------------------------+
+|                         |                   |                         |
+|    Input Binary         |                   |   Encrypted/Compressed  |
+|                         |                   |       Binary            |
++----------+--------------+                   +-----------+-------------+
+           |                                              |
+           |             Encryption/Compression           |
+           |                                              |
+           v                                              v
++----------+--------------+                   +-----------+-------------+
+|                         |                   |                         |
+|    Encrypted/Compressed |                   |  Decrypted/Decompressed |
+|        Binary           |                   |         Binary          |
+|                         |                   |                         |
++-------------------------+                   +-------------------------+
+
 Two distinct packers are involved: the original packer and the final packer.
 
 The original packer is a separate program that is used to encrypt or compress the target binary. It takes the original binary as input, applies specific encryption or compression techniques, and generates an encrypted or compressed binary as output. The original packer is responsible for creating a specific format or structure for the encrypted/compressed binary, which may include additional information such as decryption routines or metadata.
