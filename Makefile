@@ -1,8 +1,8 @@
 # **************************************************************************** #
 #       TITLE                                                                  #
 # **************************************************************************** #
-NAME = woody_woodpacker
-OUTFILE = woody
+NAME	= woody_woodpacker
+OUTFILE	= woody
 
 # **************************************************************************** #
 #       COMMANDS                                                               #
@@ -17,29 +17,39 @@ CFLAGS = -Wall -Wextra -g #-Werror
 # **************************************************************************** #
 #       SOURCES                                                                #
 # **************************************************************************** #
-SRCS_DIR = srcs/
-SRCS_FILES = $(notdir $(wildcard srcs/*.c))
-SRCS = $(addprefix $(SRCS_DIR), $(SRCS_FILES)%.c)
+SRCS_DIR	= srcs/
+SRCS_FILES	= $(notdir $(wildcard $(SRCS_DIR)*.c))
+SRCS		= $(addprefix $(SRCS_DIR), $(SRCS_FILES)%.c)
+
+ASM_SRCS_DIR	= srcs/
+ASM_SRCS_FILES	= $(notdir $(wildcard $(ASM_SRCS_DIR)*.s))
+ASM_SRCS		= $(addprefix $(ASM_SRCS_DIR), $(ASM_SRCS_FILES)%.s)
 
 # **************************************************************************** #
-#       INCLUDES                                                                #
+#       INCLUDES                                                               #
 # **************************************************************************** #
 INCS = errors.h ww.h
 
 # **************************************************************************** #
+#       OBJ                                                                    #
+# **************************************************************************** #
+
+OBJS_DIR		= objs/
+OBJS			= $(addprefix $(OBJS_DIR), $(SRCS_FILES:.c=.o))
+
+ASM_OBJS_DIR	= objs/
+ASM_OBJS		= $(addprefix $(ASM_OBJS_DIR), $(ASM_SRCS_FILES:.s=.o))
+
+# **************************************************************************** #
 #       RULES                                                                  #
 # **************************************************************************** #
-OBJ_DIR = objs/
-OBJS = $(addprefix $(OBJ_DIR), $(SRCS_FILES:.c=.o))
 
-$(OBJ_DIR)%.o : $(SRCS_DIR)%.c $(INCS) | $(OBJ_DIR)
+$(OBJS_DIR)%.o : $(SRCS_DIR)%.c $(INCS)
+	mkdir -p $(OBJS_DIR)
 	$(CC) -I. -c $(CFLAGS) $< -o $@
 
 $(NAME) : $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
-
-$(OBJ_DIR):
-	mkdir -p $@
 
 all: $(NAME)
 
@@ -47,7 +57,7 @@ debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
 
 clean:
-	rm -rf objs
+	rm -rf $(OBJS_DIR)
 
 fclean: clean
 	rm -f $(NAME) $(OUTFILE)
