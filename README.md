@@ -1,7 +1,7 @@
 # woody-woodpacker
 
 ## Description
-This project is about coding a simple packer.
+This project is about coding packers for ELF64 binary files.
 <br /><br />
 "Packers" are tools whose task consists of compressing executable programs (.exe, .dll,.ocx ...) and encrypting them simultaneously. <br />
 During execution, a program passing through a packer is loaded in memory, compressed and encrypted, then it will be decompressed (decrypted as well) and finally be executed.
