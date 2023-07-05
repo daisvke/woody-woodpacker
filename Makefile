@@ -17,13 +17,17 @@ CFLAGS = -Wall -Wextra -g #-Werror
 # **************************************************************************** #
 #       SOURCES                                                                #
 # **************************************************************************** #
-SRCS = \
-		main.c \
-		syscall_impl.c \
-		cryptography.c \
-		process_data.c \
-		utils.c \
-		mapping.c \
+SRCS_DIR = srcs/
+
+SRCS_FILES = \
+			main.c \
+			syscall_impl.c \
+			cryptography.c \
+			process_data.c \
+			utils.c \
+			mapping.c \
+
+SRCS =		$(addprefix $(SRCS_DIR), $(SRCS_FILES)%.c)
 
 # **************************************************************************** #
 #       INCLUDES                                                                #
@@ -35,10 +39,10 @@ INCS = \
 # **************************************************************************** #
 #       RULES                                                                  #
 # **************************************************************************** #
-OBJS = $(addprefix objs/,$(SRCS:.c=.o))
+OBJS = $(addprefix objs/,$(SRCS_FILES:.c=.o))
 OBJ_DIRS = $(sort $(dir $(OBJS)))
 
-objs/%.o : %.c $(INCS) | $(OBJ_DIRS)
+objs/%.o : $(SRCS_DIR)%.c $(INCS) | $(OBJ_DIRS)
 	$(CC) -I. -c $(CFLAGS) $< -o $@
 
 $(NAME) : $(OBJS)

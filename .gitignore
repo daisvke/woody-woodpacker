@@ -1,4 +1,8 @@
+# Private folder
 /private
+
+# Executable
+woody
 
 # Temp files
 .*.*.sw?
