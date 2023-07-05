@@ -18,23 +18,13 @@ CFLAGS = -Wall -Wextra -g #-Werror
 #       SOURCES                                                                #
 # **************************************************************************** #
 SRCS_DIR = srcs/
-
-SRCS_FILES = \
-			main.c \
-			syscall_impl.c \
-			cryptography.c \
-			process_data.c \
-			utils.c \
-			mapping.c \
-
-SRCS =		$(addprefix $(SRCS_DIR), $(SRCS_FILES)%.c)
+SRCS_FILES = $(notdir $(wildcard srcs/*.c))
+SRCS = $(addprefix $(SRCS_DIR), $(SRCS_FILES)%.c)
 
 # **************************************************************************** #
 #       INCLUDES                                                                #
 # **************************************************************************** #
-INCS = \
-		errors.h \
-		ww.h
+INCS = errors.h ww.h
 
 # **************************************************************************** #
 #       RULES                                                                  #
