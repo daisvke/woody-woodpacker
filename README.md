@@ -19,3 +19,8 @@ Thus, encryption and compression of a packer allow to bypass this behavior by ob
 ◦ the functions of the printf family
 ◦ the function authorized within libft (read, write, malloc, free, for exam-
 ple)
+
+## Useful Links
+https://packetstormsecurity.com/files/12327/elf-pv.txt.html
+https://grugq.github.io/docs/phrack-58-05.txt
+https://wh0rd.org/books/linkers-and-loaders/linkers_and_loaders.pdf
