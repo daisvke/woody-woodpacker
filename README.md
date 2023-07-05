@@ -13,21 +13,21 @@ Thus, encryption and compression of a packer allow to bypass this behavior by ob
 # Two packers
 
 Original Packer                                Final Packer
-+-------------------------+                   +-------------------------+
-|                         |                   |                         |
-|    Input Binary         |                   |   Encrypted/Compressed  |
-|                         |                   |       Binary            |
-+----------+--------------+                   +-----------+-------------+
-           |                                              |
-           |             Encryption/Compression           |
-           |                                              |
-           v                                              v
-+----------+--------------+                   +-----------+-------------+
-|                         |                   |                         |
-|    Encrypted/Compressed |                   |  Decrypted/Decompressed |
-|        Binary           |                   |         Binary          |
-|                         |                   |                         |
-+-------------------------+                   +-------------------------+
++-------------------------+                   +-------------------------+<br />
+|                         |                   |                         |<br />
+|    Input Binary         |                   |   Encrypted/Compressed  |<br />
+|                         |                   |       Binary            |<br />
++----------+--------------+                   +-----------+-------------+<br />
+           |                                              |<br />
+           |             Encryption/Compression           |<br />
+           |                                              |<br />
+           v                                              v<br />
++----------+--------------+                   +-----------+-------------+<br />
+|                         |                   |                         |<br />
+|    Encrypted/Compressed |                   |  Decrypted/Decompressed |<br />
+|        Binary           |                   |         Binary          |<br />
+|                         |                   |                         |<br />
++-------------------------+                   +-------------------------+<br />
 
 Two distinct packers are involved: the original packer and the final packer.
 
