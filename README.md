@@ -46,13 +46,13 @@ Our keygen function generates a random encryption key of a specified width using
 
 ## Allowed functions
 
-◦ open, close, exit
-◦ fpusts, fflush, lseek
-◦ mmap, munmap, mprotect
-◦ perror, strerror
-◦ syscall
-◦ the functions of the printf family
-◦ the function authorized within libft (read, write, malloc, free, for exam-
+* open, close, exit
+* fpusts, fflush, lseek
+* mmap, munmap, mprotect
+* perror, strerror
+* syscall
+* the functions of the printf family
+* the function authorized within libft (read, write, malloc, free, for exam-
 ple)
 
 ## Useful Links
