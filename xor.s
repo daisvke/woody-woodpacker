@@ -16,13 +16,6 @@ bits 64
 ;---------------------------------- Macros
 SYS_WRITE	equ 1
 STDOUT		equ 1
-SYS_EXIT	equ 60
-
-%macro exit 0
-	mov	rax, SYS_EXIT
-	mov	rdi, 0
-	syscall
-%endmacro
 ;----------------------------------
 
 section .text
