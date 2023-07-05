@@ -56,6 +56,6 @@ Our keygen function generates a random encryption key of a specified width using
 ple)
 
 ## Useful Links
-https://packetstormsecurity.com/files/12327/elf-pv.txt.html
-https://grugq.github.io/docs/phrack-58-05.txt
+https://packetstormsecurity.com/files/12327/elf-pv.txt.html<br />
+https://grugq.github.io/docs/phrack-58-05.txt<br />
 https://wh0rd.org/books/linkers-and-loaders/linkers_and_loaders.pdf
