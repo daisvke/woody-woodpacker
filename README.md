@@ -10,7 +10,7 @@ The existence of such programs is related to the fact that antivirus programs ge
 Thus, encryption and compression of a packer allow to bypass this behavior by obfuscating the content of an executable until it execution.
 
 ## Technical aspects
-# Two packers
+### Two packers
 ```
 Original Packer                                Final Packer
 +-------------------------+                   +-------------------------+
@@ -37,11 +37,11 @@ Next, the final packer is the packer that is included inside the generated file 
 
 So, in summary, the original packer is used to encrypt or compress the target binary, while the final packer is included in the generated file and is loaded during execution to decrypt or decompress the binary before execution.
 
-# Keygen
+### Keygen
 
 Our keygen function generates a random encryption key of a specified width using a given character set. It allocates memory for the key, seeds the random number generator with the current time, and selects random characters from the character set to build the key.
 
-# Data encryption
+### Data encryption
 * XOR-based Encryption
 
 ## Allowed functions
