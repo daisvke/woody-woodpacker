@@ -52,8 +52,7 @@ Our keygen function generates a random encryption key of a specified width using
 * perror, strerror
 * syscall
 * the functions of the printf family
-* the function authorized within libft (read, write, malloc, free, for exam-
-ple)
+* the function authorized within libft (read, write, malloc, free, for example)
 
 ## Useful Links
 https://packetstormsecurity.com/files/12327/elf-pv.txt.html<br />
