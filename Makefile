@@ -29,16 +29,16 @@ INCS = errors.h ww.h
 # **************************************************************************** #
 #       RULES                                                                  #
 # **************************************************************************** #
-OBJS = $(addprefix objs/,$(SRCS_FILES:.c=.o))
-OBJ_DIRS = $(sort $(dir $(OBJS)))
+OBJ_DIR = objs/
+OBJS = $(addprefix $(OBJ_DIR), $(SRCS_FILES:.c=.o))
 
-objs/%.o : $(SRCS_DIR)%.c $(INCS) | $(OBJ_DIRS)
+$(OBJ_DIR)%.o : $(SRCS_DIR)%.c $(INCS) | $(OBJ_DIR)
 	$(CC) -I. -c $(CFLAGS) $< -o $@
 
 $(NAME) : $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
-$(OBJ_DIRS):
+$(OBJ_DIR):
 	mkdir -p $@
 
 all: $(NAME)
