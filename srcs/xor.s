@@ -9,9 +9,9 @@ bits 64
 ; cipher, an encryption algorithm that operates, in binary,
 ; according to the principles:
 ;
-; 1 ⊕ 0 = 1,
-; 1 ⊕ 1 = 0,
-; 0 ⊕ 0 = 0,
+;   0 1 1
+;   0 1 0
+;=> 0 0 1
 
 ;---------------------------------- Macros
 SYS_WRITE	equ 1
