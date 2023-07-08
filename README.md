@@ -49,7 +49,7 @@ Binary File
 +----------------------------------------------------+
 |                Program Header Table                |
 |   (Variable size, contains ELF64_Phdr structures)  |
-|                                                    |
+|                 contains info about:               |
 |                     Segment 1                      |
 |                     Segment 2...                   |
 |                  ...Segemnt n                      |
@@ -63,8 +63,10 @@ Binary File
 |                 Symbol Table Section               |
 |   (Variable size, contains ELF64_Sym structures)   |
 +----------------------------------------------------+
-|              String Table Section                  |
-|          (Variable size, contains strings)         |
+|                 String Table Section               |
+|          (Variable size, contains strings)         |      
+|       Contains a single string in the format:      |
+|              "name1\0name2\0name3\0"               |
 +----------------------------------------------------+
 |                Section Header Table (optional)     |
 |   (Variable size, contains ELF64_Shdr structures)  |
@@ -76,6 +78,7 @@ Here's a brief explanation of each component:
 - ELF Header: The ELF header contains essential information about the file, including the ELF identification, file type, architecture, entry point, program header table offset, section header table offset, and more. It follows the ELF64_Ehdr structure and has a size of 64 bytes.
 
 - Program Header Table: This table describes the segments or sections in the binary file, such as the code segment, data segment, and dynamic linking information. Each entry follows the ELF64_Phdr structure and provides details like the segment type, offset, virtual address, file size, and memory size. The size of the program header table can vary depending on the number of entries.
+Details about program headers and segments can be displayed by the command: readelf -l.
 
 - Section Header Table: This table contains information about each section in the binary file, such as the name, type, flags, offset, size, and more. Each entry follows the ELF64_Shdr structure. The section header table size can vary based on the number of sections.
 
@@ -88,13 +91,31 @@ Here's a brief explanation of each component:
 - String Table Section: This section stores the names of various symbols, section names, and other string data referenced by the binary. It has a variable size and contains strings.
 
 Please note that the actual sizes and structures may vary depending on the specific binary format and the contents of the file. The representation provided here gives a general overview of the components typically found in a binary file with a 64-bit ELF header.
+<br /><br />
+Please check man ELF for more details.
+
+### The section header
+
+In the context of object file formats, such as ELF (Executable and Linkable Format), the section header is optional in certain cases. The section header table provides information about the layout and attributes of sections within the object file.
+<br /><br />
+Here are some cases where the section header may be optional:
+
+    1. Simple Object Files: In some cases, when dealing with simple object files that do not have multiple sections or complex attributes, the section header table may be omitted to save space. This is often seen in smaller or minimalistic object files.
+
+    2. Stripped Executables: When creating an executable file for distribution, it is common to strip the symbol and debug information from the binary. In this case, the section header table, along with other debugging-related sections, may be removed to reduce the file size and protect the original source code and symbols.
+
+    3. Raw Data Files: If the object file is intended to be used purely as a container for raw data, without any need for detailed section information or processing, the section header table may be omitted. This is typically seen in cases where the object file is used as a data resource or input file for other tools or processes.
+<br /><br />
+It's important to note that the absence of the section header table in these cases may limit or hinder the ability to analyze or manipulate the object file in certain ways. The section header provides valuable metadata and allows tools and systems to understand the structure and characteristics of the object file.
 
 ### ELF infection
 
-A process image consists of a 'text segment' and a 'data segment'.  The text
+* A process image consists of a 'text segment' and a 'data segment'.  The text
 segment is given the memory protection r-x (from this its obvious that self
 modifying code cannot be used in the text segment).  The data segment is
 given the protection rw-.
+* When software or code is EIP-independent, it means that it does not rely on specific memory addresses or offsets relative to the EIP register. This characteristic can be important in various contexts, such as the exploit development: in the field of computer security and vulnerability research, EIP-independent code is relevant when crafting exploits. Exploits that are EIP-independent are less reliant on the specific memory layout of a target system, making them more reliable across different environments.
+* Program header: e_entry: This member gives the virtual address to which the system first transfers control, thus starting the  process.
 
 ### Keygen
 
@@ -116,4 +137,5 @@ Our keygen function generates a random encryption key of a specified width using
 ## Useful Links
 https://packetstormsecurity.com/files/12327/elf-pv.txt.html<br />
 https://grugq.github.io/docs/phrack-58-05.txt<br />
-https://wh0rd.org/books/linkers-and-loaders/linkers_and_loaders.pdf
+https://wh0rd.org/books/linkers-and-loaders/linkers_and_loaders.pdf<br />
+https://hackademics.fr/forum/hacking-connaissances-avanc%C3%A9es/reversing/autres-aq/3096-reversing-tutorials-level-2-le-format-elf

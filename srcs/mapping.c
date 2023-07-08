@@ -1,13 +1,13 @@
 #include "ww.h"
 
-bool _ww_is_elf64(unsigned char* _buffer) {
+int _ww_is_elf64(unsigned char* _buffer) {
     Elf64_Ehdr  _elf_header;
     _ww_memcpy(&_elf_header, _buffer, sizeof(Elf64_Ehdr));
 
     // We get to EI_CLASS by moving forward for 4 bytes (= 1st field's size of e_ident)
     if (_elf_header.e_ident[EI_CLASS] != ELFCLASS64)
-       return false;
-    return true;
+       return -1;
+    return 0;
 }
 
 /*
@@ -51,7 +51,7 @@ int _ww_map_file_into_memory(const char *filename)
     }
     close(_fd); /* No need to keep the fd since the file is mapped */
 
-    if (_ww_is_elf64(_buffer) == false)
+    if (_ww_is_elf64(_buffer) == -1)
         return _ww_print_errors(_WW_ERR_NOT64BITELF);    
     return 0;
 }

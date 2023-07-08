@@ -8,7 +8,6 @@
 # include <stdint.h>
 # include <sys/mman.h>		// For mapping 
 # include <elf.h>			// For ELF header
-# include <stdbool.h>
 # include <string.h>
 # include <time.h>			// For rand & srand
 
