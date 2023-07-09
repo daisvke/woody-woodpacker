@@ -40,7 +40,7 @@
 
 /*-------------------------------------------------------*/
 // Global variables
-extern unsigned char*	_buffer;
+extern unsigned char*	_mapped_data;
 extern off_t	        _file_size;
 /*-------------------------------------------------------*/
 
