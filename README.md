@@ -99,11 +99,11 @@ In the context of object file formats, such as ELF, the section header is option
 <br /><br />
 Here are some cases where the section header may be optional:
 
-    1. Simple Object Files: In some cases, when dealing with simple object files that do not have multiple sections or complex attributes, the section header table may be omitted to save space. This is often seen in smaller or minimalistic object files.
+1. Simple Object Files: In some cases, when dealing with simple object files that do not have multiple sections or complex attributes, the section header table may be omitted to save space. This is often seen in smaller or minimalistic object files.
 
-    2. Stripped Executables: When creating an executable file for distribution, it is common to strip the symbol and debug information from the binary. In this case, the section header table, along with other debugging-related sections, may be removed to reduce the file size and protect the original source code and symbols.
+2. Stripped Executables: When creating an executable file for distribution, it is common to strip the symbol and debug information from the binary. In this case, the section header table, along with other debugging-related sections, may be removed to reduce the file size and protect the original source code and symbols.
 
-    3. Raw Data Files: If the object file is intended to be used purely as a container for raw data, without any need for detailed section information or processing, the section header table may be omitted. This is typically seen in cases where the object file is used as a data resource or input file for other tools or processes.
+3. Raw Data Files: If the object file is intended to be used purely as a container for raw data, without any need for detailed section information or processing, the section header table may be omitted. This is typically seen in cases where the object file is used as a data resource or input file for other tools or processes.
 <br /><br />
 It's important to note that the absence of the section header table in these cases may limit or hinder the ability to analyze or manipulate the object file in certain ways. The section header provides valuable metadata and allows tools and systems to understand the structure and characteristics of the object file.
 
