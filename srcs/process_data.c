@@ -58,12 +58,15 @@ void _ww_process_mapped_data()
 	printf("Generated key: %s\n", _key);
 
 	Elf64_Ehdr *_elf_header = (Elf64_Ehdr *)_mapped_data;
+
+	// For testing
 	// elf_print_header(elf_header);
 	elf_print_sections_name(_elf_header);
 
+	// To encrypt everything from program header (excluded) to section header (excluded)
 	// size_t ph_size = elf_header->e_phentsize * elf_header->e_phnum;
-
 	// xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + ph_size + elf_header->e_ehsize, _file_size - ph_size - elf_header->e_ehsize - elf_header->e_shentsize);
+	
 	_ww_encrypt_segments(_elf_header, _key);
 
 	// xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + elf_header->e_shoff, _file_size);
