@@ -125,6 +125,21 @@ given the protection rw-.
     4. Dependencies: Some sections, such as the ELF header and program headers, are critical for proper execution and loading of the ELF file.
 * Encryption is typically applied to specific sections or segments in an ELF file to protect sensitive code or data. These sections can be selectively encrypted while leaving the section header and other critical parts of the ELF file intact. By doing so, the ELF file retains its structure and can still be processed by tools without issues. Thus, we will always leave out the ELF header and the program header from the encryption.
 
+* In the ELF file format, the program header type (`p_type`) field specifies the type of each program header entry. Here are some common program header types and their corresponding decimal values:
+
+1. `PT_NULL`: Null type (0)
+2. `PT_LOAD`: Loadable segment (1) => ENCRYPT
+3. `PT_DYNAMIC`: Dynamic linking information (2) => ENCRYPT
+4. `PT_INTERP`: Program interpreter (3)
+5. `PT_NOTE`: Auxiliary information (4)
+6. `PT_SHLIB`: Reserved (5)
+7. `PT_PHDR`: Program header table (6)
+8. `PT_TLS`: Thread-local storage segment (7)
+9. `PT_LOOS` to `PT_HIOS`: Operating system-specific values (inclusive range)
+10. `PT_LOPROC` to `PT_HIPROC`: Processor-specific values (inclusive range)
+
+These are just a few examples, and there may be other program header types depending on the specific needs and extensions of the ELF file format.
+
 * In the context of packers and unpackers, the stub and the unpacker are closely related but not necessarily synonymous terms.
 <br /><br />
 The stub refers to a small piece of code that is inserted into the packed binary. Its purpose is to perform the initial processing and setup necessary for the unpacker to execute. The stub typically contains minimal functionality and is responsible for locating and executing the unpacker code.
