@@ -38,6 +38,8 @@
 // Width of the key
 # define _WW_KEYSTRENGTH	18
 
+
+
 /*-------------------------------------------------------*/
 // Global variables
 extern unsigned char*	_mapped_data;
@@ -46,7 +48,7 @@ extern off_t	        _file_size;
 
 size_t	_ww_strlen(const char *s);
 
-int		_ww_print_errors(int err_code);
+int		_ww_print_errors(enum _ww_e_errors err_code);
 
 int		_ww_map_file_into_memory(const char *filename);
 void	_ww_process_mapped_data();
