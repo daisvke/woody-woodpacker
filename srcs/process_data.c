@@ -27,12 +27,13 @@ void elf_print_sections_name(Elf64_Ehdr *data)
 	printf("\n");
 }
 
-int	_ww_check_encryption_condition(int condition, int type)
+static int	_ww_check_encryption_condition(int _type, int _flags)
 {
-	
+	if (!(_type == PT_PHDR || (_type == PT_LOAD && (_flags & PF_X) != 1)))
+		return 1;
 }
 
-void _ww_encrypt_segments(Elf64_Ehdr *_elf_header, char *_key)
+static void _ww_encrypt_segments(Elf64_Ehdr *_elf_header, char *_key)
 {
 	// Iterate over the program headers
 	Elf64_Phdr *_program_header = (Elf64_Phdr *)(_mapped_data + _elf_header->e_phoff);
@@ -41,11 +42,7 @@ void _ww_encrypt_segments(Elf64_Ehdr *_elf_header, char *_key)
 		// Check if the segment is for the "text" section
 		printf("-----------------------------------------------\n");
 		printf("* SEGMENT %ld -> type: %d\n", i, _program_header->p_type);
-		if (!(_program_header->p_type == PT_PHDR ||
-			(_program_header->p_type == PT_LOAD &&
-				(_program_header->p_flags & PF_X) != 1
-				)
-			))
+		if (_ww_check_encryption_condition(_program_header->p_type, _program_header->p_flags))
 		{
 			printf("Text section address: 0x%lx\n", (unsigned long)_program_header->p_vaddr);
 			printf("Text section size: %lu bytes\n\n", (unsigned long)_program_header->p_memsz);
@@ -66,7 +63,6 @@ void _ww_encrypt_segments(Elf64_Ehdr *_elf_header, char *_key)
 Elf64_Shdr *get_section_header(void *f, int idx) {
 	return f + (((Elf64_Ehdr *)f)->e_shoff + (idx * ((Elf64_Ehdr *)f)->e_shentsize ));
 }
-
 
 Elf64_Shdr *get_text_section_header() {
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)_mapped_data;

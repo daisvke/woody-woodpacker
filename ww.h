@@ -44,7 +44,7 @@ enum	_ww_e_encrypt_target
 	_WW_CRYPTARG_PHTEXTXALL,// .text with x rights + some other segments
 	_WW_CRYPTARG_PHALL,		// All segments
 	_WW_CRYPTARG_SHTEXT,	// text section
-	_WW_CRYPTARG_SHDATA		// data section
+	_WW_CRYPTARG_SHDATA,		// data section
 	_WW_CRYPTARG_SHALL		// text + data sections
 };
 

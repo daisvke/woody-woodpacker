@@ -1,6 +1,6 @@
 #include "ww.h"
 
-int _ww_is_elf64(unsigned char *_mapped_data)
+static int _ww_is_elf64(unsigned char *_mapped_data)
 {
     Elf64_Ehdr _elf_header;
     _ww_memcpy(&_elf_header, _mapped_data, sizeof(Elf64_Ehdr));
