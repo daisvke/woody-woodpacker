@@ -12,5 +12,5 @@ int main(int argc, char *argv[]) {
  
     _ww_process_mapped_data();
 
-    return _ww_write_processed_data_to_file();
+    // return _ww_write_processed_data_to_file();
 }
