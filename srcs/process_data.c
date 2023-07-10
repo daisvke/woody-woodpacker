@@ -38,8 +38,6 @@ static int	_ww_authorize_encryption(int _type, int _flags)
 			(_modes & _WW_CYPTREG_PHALL ) ||
 			((_modes & _WW_CYPTREG_PHTEXTX) && (_type == PT_LOAD && (_flags & PF_X))) ||
 			((_modes & _WW_CYPTREG_PHTEXT) && (_type == PT_LOAD)) ||
-			((_modes & _WW_CYPTREG_PHALL ) && (_type == PT_LOAD))
-			// (_modes & _WW_CYPTREG_PHTEXT) && (_type == PT_LOAD) ||
 		))
 		return 1;
 	return 0;
