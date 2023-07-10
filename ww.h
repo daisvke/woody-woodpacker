@@ -38,25 +38,41 @@
 // Width of the key
 # define _WW_KEYSTRENGTH	18
 
-enum	_ww_e_encrypt_target
+// Region from the source file to encrypt
+enum _ww_e_crypt_region
 {
-	_WW_CRYPTARG_PHTEXTX,	// .text segments with x rights
-	_WW_CRYPTARG_PHTEXTXALL,// .text with x rights + some other segments
-	_WW_CRYPTARG_PHALL,		// All segments
-	_WW_CRYPTARG_SHTEXT,	// text section
-	_WW_CRYPTARG_SHDATA,		// data section
-	_WW_CRYPTARG_SHALL		// text + data sections
+	_WW_CYPTREG_PHDR = 1,		// Select region using segments
+	_WW_CYPTREG_PHTEXTX = 2,	// .text segments with x rights
+	_WW_CYPTREG_PHTEXT = 4,		// .text segments
+	_WW_CYPTREG_PHALL = 8,		// All segments
+	_WW_CYPTREG_SHDR = 16,		// Select region using sections
+	_WW_CYPTREG_SHTEXT = 32,	// text section
+	_WW_CYPTREG_SHDATA = 64,	// data section
+	_WW_CYPTREG_SHALL = 128		// text + data sections
+
+	// Unpacker and stub insertion region in the target file
+};
+
+// Unpacker and stub insertion region in the target file
+enum _ww_e_insert_region
+{
+	_WW_INSTREG_PAD = 256,		// Insert inside segments paddings
+	_WW_INSTREG_SFT = 512,		// Insert at 0x0 and shift the rest
+	_WW_INSTREG_END = 1024		// Insert at the end of the file
 };
 
 /*-------------------------------------------------------*/
 // Global variables
 extern unsigned char*	_mapped_data;
 extern off_t	        _file_size;
+extern uint16_t			_modes;
 /*-------------------------------------------------------*/
 
 size_t	_ww_strlen(const char *s);
 
 int		_ww_print_errors(enum _ww_e_errors err_code);
+
+int		_ww_parse_argv(char *argv[]);
 
 int		_ww_map_file_into_memory(const char *filename);
 void	_ww_process_mapped_data();
