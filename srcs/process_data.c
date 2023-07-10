@@ -30,7 +30,17 @@ void elf_print_sections_name(Elf64_Ehdr *data)
 
 static int	_ww_authorize_encryption(int _type, int _flags)
 {
-	if (!(_type == PT_PHDR || (_type == PT_LOAD && (_flags & PF_X) != 1)))
+		// Desactivate program header encryption
+	if ((_type != PT_PHDR) &&
+		// Desactivate encryption of non executable .text segment (causes segfault)
+		!(_type == PT_LOAD && !(_flags & PF_X)) &&
+		(
+			(_modes & _WW_CYPTREG_PHALL ) ||
+			((_modes & _WW_CYPTREG_PHTEXTX) && (_type == PT_LOAD && (_flags & PF_X))) ||
+			((_modes & _WW_CYPTREG_PHTEXT) && (_type == PT_LOAD)) ||
+			((_modes & _WW_CYPTREG_PHALL ) && (_type == PT_LOAD))
+			// (_modes & _WW_CYPTREG_PHTEXT) && (_type == PT_LOAD) ||
+		))
 		return 1;
 	return 0;
 }
