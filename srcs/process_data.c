@@ -110,9 +110,9 @@ void _ww_process_mapped_data()
 	{
 		printf("Starting segment enryption...\n");
 		_ww_encrypt_segments(_elf_header, _key);
-	}
-	// If selecting encryption region according to sections
-	else
+	} 
+	else // If selecting encryption region according to sections
+	{
 		printf("Starting section enryption...\n");
 
 		Elf64_Shdr *txt_shdr = get_text_section_header();
