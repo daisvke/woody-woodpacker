@@ -37,7 +37,7 @@ static int	_ww_authorize_encryption(int _type, int _flags)
 		(
 			(_modes & _WW_CYPTREG_PHALL ) ||
 			((_modes & _WW_CYPTREG_PHTEXTX) && (_type == PT_LOAD && (_flags & PF_X))) ||
-			((_modes & _WW_CYPTREG_PHTEXT) && (_type == PT_LOAD))
+			((_modes & _WW_CYPTREG_PHTEXT) && (_type == PT_LOAD)) ||
 		))
 		return 1;
 	return 0;
@@ -90,7 +90,7 @@ Elf64_Shdr *get_text_section_header() {
 	 * while we will iterate over them.
 	*/
 	Elf64_Shdr *strtab = get_section_header(_mapped_data, ehdr->e_shstrndx);
-  
+
 	/* We iterate over each section header to find .text section name */
 	for (size_t i = 1; i < ehdr->e_shnum; i++) {
 		Elf64_Shdr *shdr = get_section_header(_mapped_data, i);
