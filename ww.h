@@ -56,4 +56,12 @@ int		_ww_write_processed_data_to_file(void);
 void	xor_encrypt_decrypt(void *key, size_t key_length, void *data, size_t data_length);
 char*	_ww_keygen(const char* _charset, size_t _strength);
 
+/* Section injection method*/
+void	*inject_section(size_t *woodysz);
+
+/* Utils that help handling elf files*/
+Elf64_Shdr	*get_section_header(void *f, int idx);
+Elf64_Phdr	*get_program_header(void *f, int idx);
+Elf64_Shdr	*get_section_header_by_name(void *f, char *section_name, int *idx);
+
 #endif
