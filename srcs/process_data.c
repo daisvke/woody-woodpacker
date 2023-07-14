@@ -1,4 +1,5 @@
 #include "ww.h"
+#include "stub.h"
 
 // For testing
 void elf_print_header(Elf64_Ehdr *data)
@@ -92,23 +93,14 @@ static void _ww_encrypt_segments(Elf64_Ehdr *_elf_header, char *_key)
 					printf("Next segment offset: %lx\n", _next_program_header->p_offset);
 					printf("Padding size: %ld\n", _padding_size);
 
-					unsigned char _code2[] = {
-						0xb8, 0x01, 0x00, 0x00, 0x00, 0xbf, 0x01, 0x00,
-						0x00, 0x00, 0x48, 0x8d, 0x35, 0x13, 0x00, 0x00,
-						0x00, 0xba, 0x0d, 0x00, 0x00, 0x00, 0x0f, 0x05,
-						0xb8, 0x3c, 0x00, 0x00, 0x00, 0xbb, 0x00, 0x00,
-						0x00, 0x00, 0x0f, 0x05, 0x2e, 0x2e, 0x2e, 0x2e,
-						0x57, 0x4f, 0x4f, 0x44, 0x59, 0x2e, 0x2e, 0x2e,
-						0x2e, 0x0a
-					};
-					printf("code size: %ld\n", sizeof(_code2));
-					_ww_memcpy(_mapped_data + _injection_offset, _code2, sizeof(_code2));
+					printf("code size: %ld\n", sizeof(_stub));
+					_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
 
 					Elf64_Ehdr	*_elf_header = (Elf64_Ehdr *)_mapped_data;
 					_elf_header->e_entry = _program_header->p_vaddr + _program_header->p_filesz;
 					printf("e_entry address: %lx\n", _elf_header->e_entry);
-					_program_header->p_filesz += sizeof(_code2);
-					_program_header->p_memsz += sizeof(_code2);
+					_program_header->p_filesz += sizeof(_stub);
+					_program_header->p_memsz += sizeof(_stub);
 					printf("NEW Segment size: %lu bytes\n\n" _WW_RESET_COLOR, (unsigned long)_program_header->p_filesz);
 				}
 			}
