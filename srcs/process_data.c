@@ -33,7 +33,7 @@ void elf_print_sections_name(Elf64_Ehdr *data)
 static int	_ww_authorize_encryption(int _type, int _flags)
 {
 		// Desactivate program header encryption
-	if ((_type != PT_PHDR) &&
+	if ((_type != PT_PHDR && _type != PT_INTERP) &&
 		// Desactivate encryption of non executable .text segment (causes segfault)
 		!(_type == PT_LOAD && !(_flags & PF_X)) &&
 		(
@@ -70,11 +70,11 @@ static void _ww_encrypt_segments(Elf64_Ehdr *_elf_header, char *_key)
 				// the latter represents the size of the segment in memory,
 				// which may include additional padding or allocated memory that
 				// we do not need to encrypt here.
-				// xor_encrypt_decrypt(
-				// 	_key, _WW_KEYSTRENGTH,
-				// 	_mapped_data + _program_header->p_offset,
-				// 	_program_header->p_filesz
-				// );
+				xor_encrypt_decrypt(
+					_key, _WW_KEYSTRENGTH,
+					_mapped_data + _program_header->p_offset,
+					_program_header->p_filesz
+				);
 			}
 			// If segment padding injectin mode is on.
 			if (_modes & _WW_INJTREG_PAD)
