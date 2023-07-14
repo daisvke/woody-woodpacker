@@ -2,7 +2,7 @@
 
 int _ww_parse_argv(char *argv[])
 {
-	// For testing
+	// ----------------------For testing----------------------------
 	// Region from the source file to encrypt
 	_modes |= _WW_CYPTREG_PHDR,			// Select region using segments
 	// _modes |= _WW_CYPTREG_PHTEXTX;		// .text segments with x rights
@@ -13,10 +13,10 @@ int _ww_parse_argv(char *argv[])
 	// _modes |= _WW_CYPTREG_SHDATA,	 	// data section
 	// _modes |= _WW_CYPTREG_SHALL			// text + data sections
 
-	// For testing
 	// Unpacker and stub insertion region in the target file
 	_modes |= _WW_INJTREG_PAD; // Insert inside segments paddings
 	// _modes |= _WW_INJTREG_SFT,			// Insert at 0x0 and shift the rest
 	// _modes |= _WW_INJTREG_END			// Insert at the end of the file
+	// --------------------------------------------------------------
 	return 0;
 }
