@@ -156,7 +156,7 @@ The unpacker, on the other hand, is the actual code responsible for unpacking or
 
 ### Keygen
 
-Our keygen function generates a random encryption key of a specified width using a given character set. It allocates memory for the key, seeds the random number generator with the current time, and selects random characters from the character set to build the key.
+Our keygen function generates a random encryption key of a specified width using a given character set. It seeds the random number generator with the current time, and selects random characters from the character set to build the key.
 
 ### Data encryption
 * XOR-based Encryption
