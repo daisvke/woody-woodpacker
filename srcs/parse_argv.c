@@ -2,6 +2,7 @@
 
 int _ww_parse_argv(char *argv[])
 {
+	(void)argv;
 	// ----------------------For testing----------------------------
 	// Region from the source file to encrypt
 	_modes |= _WW_CYPTREG_PHDR,			// Select region using segments

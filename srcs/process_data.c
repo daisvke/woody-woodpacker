@@ -1,5 +1,4 @@
 #include "ww.h"
-#include "stub.h"
 
 // For testing
 void elf_print_header(Elf64_Ehdr *data)
@@ -33,11 +32,11 @@ void elf_print_sections_name(Elf64_Ehdr *data)
 static int	_ww_authorize_encryption(int _type, int _flags)
 {
 		// Desactivate program header encryption
-	if ((_type != PT_PHDR) &&
+	if ((_type != PT_PHDR && _type != PT_INTERP) &&
 		// Desactivate encryption of non executable .text segment (causes segfault)
 		!(_type == PT_LOAD && !(_flags & PF_X)) &&
 		(
-			(_modes & _WW_CYPTREG_PHALL ) ||
+			(_modes & _WW_CYPTREG_PHALL) ||
 			((_modes & _WW_CYPTREG_PHTEXTX) && (_type == PT_LOAD && (_flags & PF_X))) ||
 			((_modes & _WW_CYPTREG_PHTEXT) && (_type == PT_LOAD))
 		))
@@ -45,11 +44,10 @@ static int	_ww_authorize_encryption(int _type, int _flags)
 	return 0;
 }
 
-static void _ww_encrypt_segments(Elf64_Ehdr *_elf_header, char *_key)
+static void _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
 {
 	// Iterate over the program headers
 	Elf64_Phdr *_program_header = (Elf64_Phdr *)(_mapped_data + _elf_header->e_phoff);
-	off_t	_injection_offset = 0;
 
 	for (size_t i = 0; i < _elf_header->e_phnum; i++)
 	{
@@ -70,41 +68,15 @@ static void _ww_encrypt_segments(Elf64_Ehdr *_elf_header, char *_key)
 				// the latter represents the size of the segment in memory,
 				// which may include additional padding or allocated memory that
 				// we do not need to encrypt here.
-				// xor_encrypt_decrypt(
-				// 	_key, _WW_KEYSTRENGTH,
-				// 	_mapped_data + _program_header->p_offset,
-				// 	_program_header->p_filesz
-				// );
+				xor_encrypt_decrypt(
+					_key, _WW_KEYSTRENGTH,
+					_mapped_data + _program_header->p_offset,
+					_program_header->p_filesz
+				);
 			}
-			// If segment padding injectin mode is on.
+			// If segment padding injection mode is on.
 			if (_modes & _WW_INJTREG_PAD)
-			{
-				if (_program_header->p_type == PT_LOAD &&
-					(_program_header->p_flags & PF_X))
-				{
-					_injection_offset =
-						_program_header->p_offset + _program_header->p_filesz;
-					off_t	_injection_addr = _program_header->p_vaddr + _program_header->p_filesz;
-					printf(_WW_YELLOW_COLOR "\n\nInjection start offset: %lx\n", _injection_offset);
-					// Getting next segment's header
-					Elf64_Phdr *_next_program_header = 
-						(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
-					off_t	_padding_size = _next_program_header->p_vaddr - _injection_addr;
-					printf("Next segment offset: %lx\n", _next_program_header->p_offset);
-					printf("Padding size: %ld\n", _padding_size);
-
-					printf("code size: %ld\n", sizeof(_stub));
-					_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
-
-					Elf64_Ehdr	*_elf_header = (Elf64_Ehdr *)_mapped_data;
-					_elf_header->e_entry = _program_header->p_vaddr + _program_header->p_filesz;
-					printf("e_entry address: %lx\n", _elf_header->e_entry);
-					_program_header->p_filesz += sizeof(_stub);
-					_program_header->p_memsz += sizeof(_stub);
-					printf("NEW Segment size: %lu bytes\n\n" _WW_RESET_COLOR, (unsigned long)_program_header->p_filesz);
-				}
-			}
-			// elf_print_sections_name(_elf_header);
+				_ww_inject_stub(_elf_header, _program_header);
 		}
 		_program_header =
 			(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
@@ -145,13 +117,13 @@ void _ww_process_mapped_data()
 
 	// For testing
 	// elf_print_header(elf_header);
-	elf_print_sections_name(_elf_header);
+	// elf_print_sections_name(_elf_header);
 
 	// If selecting encryption region according to segments
 	if (_modes & _WW_CYPTREG_PHDR)
 	{
 		printf("Starting segment enryption...\n");
-		_ww_encrypt_segments(_elf_header, _key);
+		_ww_process_segments(_elf_header, _key);
 	} 
 	else // If selecting encryption region according to sections
 	{
