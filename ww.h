@@ -10,6 +10,7 @@
 # include <elf.h>	  // For ELF header
 # include <string.h>
 # include <time.h> // For rand & srand
+# include <stdbool.h> // For bool
  
 # include "errors.h"
 # include "colorcodes.h"
@@ -67,7 +68,7 @@ size_t	_ww_strlen(const char *s);
 
 int		_ww_print_errors(enum _ww_e_errors err_code);
 
-int		_ww_get_opt(char *argv[]);
+int		_ww_get_opt(char *argv[], int argc);
 
 int		_ww_map_file_into_memory(const char *filename);
 void	_ww_process_mapped_data();
