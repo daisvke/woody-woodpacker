@@ -57,6 +57,12 @@ enum	_ww_e_inject_region
 	_WW_INJTREG_END = 1024 // Insert at the end of the file
 };
 
+// Struct that hold options, it's used as an array
+typedef struct {
+    const char short_opt;
+    const char* long_opt;
+} _ww_option;
+
 /*-------------------------------------------------------*/
 // Global variables
 extern unsigned char	*_mapped_data;
@@ -68,7 +74,7 @@ size_t	_ww_strlen(const char *s);
 
 int		_ww_print_errors(enum _ww_e_errors err_code);
 
-int		_ww_get_opt(char *argv[], int argc);
+int		_ww_get_opt(char *argv[], int argc, uint16_t *_modes);
 
 int		_ww_map_file_into_memory(const char *filename);
 void	_ww_process_mapped_data();

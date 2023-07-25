@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	// if (argc != 2)
 	// 	return _ww_print_errors(_WW_ERR_BADARGNBR);
 
-	if (_ww_get_opt(argv, argc) == _WW_ERROR)
+	if (_ww_get_opt(argv, argc, &_modes) == _WW_ERROR)
 		return _ww_print_errors(_WW_ERR_BADARG);
 	return 42;
 

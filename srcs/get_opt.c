@@ -1,18 +1,6 @@
 #include "ww.h"
 #include <stdio.h> // NOTE: to remove
 
-
-// TODO: Write nice documentation to what happens in this file
-// TODO: Make it possible to encrypt multiple files
-// TODO: For each file, print the result (success or failure)
-// TODO: Print selected options, ex: `Padding mode choose, segment encryption.`
-// TODO: No options choosed, we should display a default message like :
-// `No options choosed, trying from more optimized method to less, encrypting all the segments`
-// TODO: For each file: while they are being processed, print debug information like:
-// `Trying padding mode`, `Failed padding mode, trying shifting mode`, etc...
-// TODO: If no options, no file: default to a.out
-// TODO: If an option is unknown print the help message on STDERR and exit
-
 static bool _ww_is_long_opt(char *arg) {
 	return (arg[0] != '\0' && arg[1] != '\0' && arg[0] == '-' && arg[1] == '-');
 }
@@ -21,8 +9,81 @@ static bool _ww_is_short_opt(char *arg) {
 	return (arg[0] != '\0' && arg[0] == '-');
 }
 
-bool _ww_is_option_set(char *options, char option_flag) {
+bool _ww_is_option_set(uint16_t *options, char option_flag) {
 	return (*options & option_flag) != 0;
+}
+
+static void set_options(uint16_t *options, char opt_flag) {
+	*options |= opt_flag;
+}
+
+// []: Write nice documentation to what happens in this file
+// []: Make it possible to encrypt multiple files
+// []: For each file, print the result (success or failure)
+// []: Print selected options, ex: `Padding mode choose, segment encryption.`
+// []: No options choosed, we should display a default message like :
+// `No options choosed, trying from more optimized method to less, encrypting all the segments`
+// []: For each file: while they are being processed, print debug information like:
+// `Trying padding mode`, `Failed padding mode, trying shifting mode`, etc...
+// []: If no options, no file: default to a.out
+// []: If an option is unknown print the help message on STDERR and exit
+
+static _ww_option* get_options(int *count) {
+	static _ww_option options[] = {
+		{'r', "region"},
+		{'p', "padding"},
+		{'s', "shifting"},
+		{'h', "help"},
+	};
+
+	if (count)
+		*count = sizeof(options) / sizeof(options[0]);
+	return options;
+}
+
+# define _WW_ERROR 1
+# define _WW_HELP 2
+static void process_short_opt(char *arg, uint16_t *_modes, char *progname) {
+	int count;
+	_ww_option *options = get_options(&count);
+
+	int arg_len = strlen(arg);
+	for (int i = 1; i < arg_len; i++) {
+		for (int j = 0; j < count; j++) {
+			if (arg[i] == options[j].short_opt) {
+				 uint16_t opt_flag = 0;
+				if (options[j].short_opt == 'r') {
+					// _WW_CYPTREG_PHDR,	// Select region using segments
+					// _WW_CYPTREG_PHTEXTX;	// .text segments with x rights
+					// _WW_CYPTREG_PHTEXT,	// .text segments
+					// _WW_CYPTREG_PHALL,	// All segments
+					// _WW_CYPTREG_SHDR,	// Select region using sections
+					// _WW_CYPTREG_SHTEXT,	// text section
+					// _WW_CYPTREG_SHDATA,	// data section
+					// _WW_CYPTREG_SHALL,	// text + data sections
+					opt_flag = _WW_CYPTREG_PHALL;
+				}
+				else if (options[j].short_opt == 'p') {
+					// _WW_INJTREG_PAD,		// Insert inside segments paddings
+					opt_flag = _WW_INJTREG_PAD;
+				}
+				else if (options[j].short_opt == 's') {
+					// _WW_INJTREG_SFT,		// Insert at 0x0 and shift the rest
+					opt_flag = _WW_INJTREG_SFT;
+				}
+					// _WW_INJTREG_END,		// Insert at the end of the file
+				else if (options[j].short_opt == 'h')
+					opt_flag = _WW_HELP;
+				set_options(_modes, opt_flag);
+				break;
+			}
+			else if (j + 1 == count) {
+				set_options(_modes, _WW_ERROR); // option_error
+				dprintf(STDERR_FILENO, "%s: unrecognized option '%c'\n", progname, arg[i]);
+				return;
+			}
+		}
+	}
 }
 
 void _ww_help(char *progname, int fd) {
@@ -38,7 +99,7 @@ void _ww_help(char *progname, int fd) {
 	dprintf(fd, "  -h,		--help			Display this information\n");
 }
 
-int _ww_get_opt(char *argv[], int argc)
+int _ww_get_opt(char *argv[], int argc, uint16_t *_modes)
 {
 	printf(MAG"[   DEV   ]\n"RESET);
 	fflush(NULL);
@@ -50,7 +111,7 @@ int _ww_get_opt(char *argv[], int argc)
 			argv[i][0] = '\0';
 		}
 		else if (_ww_is_short_opt(*(argv + i))) {
-			// process_short_opt(*(argv + i), opts, *argv);
+			process_short_opt(*(argv + i), _modes, *argv);
 			argv[i][0] = '\0';
 		}
 		// NOTE: Careful _WW_ERROR is value 1 & _WW_CYPTREG_PHDR too
@@ -61,19 +122,19 @@ int _ww_get_opt(char *argv[], int argc)
 
 	// ----------------------For testing----------------------------
 	// Region from the source file to encrypt
-	_modes |= _WW_CYPTREG_PHDR,			// Select region using segments
-	// _modes |= _WW_CYPTREG_PHTEXTX;		// .text segments with x rights
-	// _modes |= _WW_CYPTREG_PHTEXT,		// .text segments
-	_modes |= _WW_CYPTREG_PHALL,			// All segments
-	// _modes |= _WW_CYPTREG_SHDR, // Select region using sections
-	// _modes |= _WW_CYPTREG_SHTEXT,	 	// text section
-	// _modes |= _WW_CYPTREG_SHDATA,	 	// data section
-	// _modes |= _WW_CYPTREG_SHALL			// text + data sections
+	*_modes |= _WW_CYPTREG_PHDR,			// Select region using segments
+	// *_modes |= _WW_CYPTREG_PHTEXTX;		// .text segments with x rights
+	// *_modes |= _WW_CYPTREG_PHTEXT,		// .text segments
+	*_modes |= _WW_CYPTREG_PHALL,			// All segments
+	// *_modes |= _WW_CYPTREG_SHDR, 			// Select region using sections
+	// *_modes |= _WW_CYPTREG_SHTEXT,	 	// text section
+	// *_modes |= _WW_CYPTREG_SHDATA,	 	// data section
+	// *_modes |= _WW_CYPTREG_SHALL			// text + data sections
 
 	// Unpacker and stub insertion region in the target file
-	_modes |= _WW_INJTREG_PAD; // Insert inside segments paddings
-	// _modes |= _WW_INJTREG_SFT,			// Insert at 0x0 and shift the rest
-	// _modes |= _WW_INJTREG_END			// Insert at the end of the file
+	*_modes |= _WW_INJTREG_PAD; 			// Insert inside segments paddings
+	// *_modes |= _WW_INJTREG_SFT,			// Insert at 0x0 and shift the rest
+	// *_modes |= _WW_INJTREG_END			// Insert at the end of the file
 	// --------------------------------------------------------------
 	printf(MAG"[ END DEV ]\n"RESET);
 	return 0;
