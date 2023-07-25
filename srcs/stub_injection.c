@@ -1,5 +1,4 @@
 #include "ww.h"
-#include "stub.h"
 
 void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
 {
@@ -27,10 +26,10 @@ void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
 
 			Elf64_Ehdr	*_elf_header = (Elf64_Ehdr *)_mapped_data;
 			_elf_header->e_entry = _program_header->p_vaddr + _program_header->p_filesz;
-			printf("e_entry address: %lx\n", _elf_header->e_entry);
-			_program_header->p_filesz += sizeof(_stub);
+			printf("e_entry address: %lx\n" _WW_RESET_COLOR, _elf_header->e_entry);
+			// _program_header->p_filesz += sizeof(_stub);
 			_program_header->p_memsz += sizeof(_stub);
-			printf("NEW Segment size: %lu bytes\n\n" _WW_RESET_COLOR, (unsigned long)_program_header->p_filesz);
+			// printf("NEW Segment size: %lu bytes\n\n" _WW_RESET_COLOR, (unsigned long)_program_header->p_filesz);
 		}
 		else {
 			printf(

@@ -1,4 +1,4 @@
-bits 64
+[BITS 64]
 
 ;----------------------------------------------------------------
 ; void	xor_encrypt_decrypt(
@@ -64,10 +64,6 @@ continue_loop:
 	jne		xor_loop
 	; If reached, print the result
 	call	print_data
-	; And return from the function after putting back the caller's
-	; original values in the registers
-	leave	; mov rsp, rbp ; pop rbp
-	ret
 
 ; Print the processed data
 print_data:
@@ -76,4 +72,7 @@ print_data:
     mov		rsi, rdx
 	mov		rdx, rcx
     syscall
+	; And return from the function after putting back the caller's
+	; original values in the registers
+	leave	; mov rsp, rbp ; pop rbp
 	ret

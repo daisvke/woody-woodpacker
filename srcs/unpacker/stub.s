@@ -1,9 +1,12 @@
-bits 64
+[BITS 64]
 ; We will use the 64-bit registers as 32-bit instructions
 ; have the same size.
 global _start
 
 _start:
+    push    rbp
+    mov     rbp, rsp
+
     ; Print using write syscall
     mov		rax, 1          ; Write syscall code
     mov		rdi, 1          ; stdout code
@@ -11,10 +14,15 @@ _start:
 	mov		rdx, 13         ; String size of 'w'
     syscall                 ; Run write(rdi, rsi, rdx)
 
+    mov     r8, 0x8000000
+    add     r8, 0x1050 + 1
+    leave
+	jmp		r8
+
     ; Exit
-    mov		rax, 60         ; Exit syscall code
-    mov		rbx, 0          ; Exit status code
-    syscall
+    ; mov		rax, 60         ; Exit syscall code
+    ; mov		rbx, 0          ; Exit status code
+    ; syscall
 
 ; String header that would be printed in stdout during execution
 ; of the output file.

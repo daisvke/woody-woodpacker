@@ -60,6 +60,7 @@ enum	_ww_e_inject_region
 extern unsigned char	*_mapped_data;
 extern off_t			_file_size;
 extern uint16_t			_modes;
+extern unsigned char	*_stub;
 /*-------------------------------------------------------*/
 
 size_t	_ww_strlen(const char *s);

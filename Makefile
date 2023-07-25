@@ -65,14 +65,17 @@ $(NAME) : $(OBJS) $(ASM_OBJS)
 
 $(STUB_OBJS_DIR)%.o : $(STUB_SRCS_DIR)%.s
 	mkdir -p $(OBJS_DIR)
-	echo "unsigned char _stub[] = {" > $(STUB_HDR)
-	nasm -f bin $< -o $@
-
-all: generate_hex_stub $(NAME)
+	echo "#ifndef STUB_H" > $(STUB_HDR)
+	echo "# define STUB_H" >> $(STUB_HDR)
+	echo "unsigned char _stubgen[] = {" >> $(STUB_HDR)
+	nasm -f bin $< -o $@ -g
 
 generate_hex_stub : $(STUB_OBJS)
 	xxd -i < $(STUB_OBJS) >> $(STUB_HDR)
 	echo "};" >> $(STUB_HDR)
+	echo "#endif" >> $(STUB_HDR)
+
+all: generate_hex_stub $(NAME)
 
 debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
