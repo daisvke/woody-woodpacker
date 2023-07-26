@@ -30,7 +30,7 @@ static void set_options(uint16_t *options, uint16_t opt_flag) {
 
 static _ww_option* get_options(int *count) {
 	static _ww_option options[] = {
-		{'r', "region"},
+		{'r', ""},
 		{'p', "padding"},
 		{'s', "shifting"},
 		{'h', "help"},
@@ -115,6 +115,28 @@ static void process_short_opt(char *arg, uint16_t *_modes, char *progname) {
 	}
 }
 
+static void process_long_opt(char *arg, uint16_t *_modes, char *progname) {
+	int count;
+	_ww_option *options = get_options(&count);
+
+	for (long i = 0; i < count; i++) {
+		if (strcmp(arg + 2, options[i].long_opt) == 0) {
+			uint16_t opt_flag = 0;
+			// if (options[i].short_opt == 'r') { }
+			if (options[i].short_opt == 'p')
+				opt_flag = _WW_INJTREG_PAD;
+			else if (options[i].short_opt == 's')
+				opt_flag = _WW_INJTREG_SFT;
+			else if (options[i].short_opt == 'h')
+				opt_flag = _WW_HELP;
+			set_options(_modes, opt_flag);
+			return;
+		}
+	}
+	set_options(_modes, _WW_MODE_ERROR);
+	dprintf(STDERR_FILENO, "%s: unrecognized option '%s'\n", progname, arg);
+}
+
 void _ww_help(char *progname, int fd) {
 	dprintf(fd, "Usage: %s: [option(s)] [file(s)]\n", progname);
 	dprintf(fd, "Pack [files(s)] by encrypting sections or segments (a.out by default).\n");
@@ -136,7 +158,7 @@ int _ww_get_opt(char *argv[], int argc, uint16_t *_modes)
 
 	for (int i = 1; i < argc; i++) {
 		if (_ww_is_long_opt(*(argv + i))) {
-			// process_long_opt(*(argv + i), opts, *argv);
+			process_long_opt(*(argv + i), _modes, *argv);
 			argv[i][0] = '\0';
 		}
 		else if (_ww_is_short_opt(*(argv + i))) {
