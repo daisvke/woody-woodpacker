@@ -9,11 +9,11 @@ static bool _ww_is_short_opt(char *arg) {
 	return (arg[0] != '\0' && arg[0] == '-');
 }
 
-bool _ww_is_option_set(uint16_t *options, char option_flag) {
+bool _ww_is_option_set(uint16_t *options, uint16_t option_flag) {
 	return (*options & option_flag) != 0;
 }
 
-static void set_options(uint16_t *options, char opt_flag) {
+static void set_options(uint16_t *options, uint16_t opt_flag) {
 	*options |= opt_flag;
 }
 
@@ -41,45 +41,80 @@ static _ww_option* get_options(int *count) {
 	return options;
 }
 
-# define _WW_ERROR 1
-# define _WW_HELP 2
 static void process_short_opt(char *arg, uint16_t *_modes, char *progname) {
 	int count;
 	_ww_option *options = get_options(&count);
 
 	int arg_len = strlen(arg);
-	for (int i = 1; i < arg_len; i++) {
-		for (int j = 0; j < count; j++) {
+	for (int i = 1; i < arg_len; i++) { // Iterate over program params
+		for (int j = 0; j < count; j++) { // Iterate over available options
 			if (arg[i] == options[j].short_opt) {
 				 uint16_t opt_flag = 0;
 				if (options[j].short_opt == 'r') {
-					// _WW_CYPTREG_PHDR,	// Select region using segments
-					// _WW_CYPTREG_PHTEXTX;	// .text segments with x rights
-					// _WW_CYPTREG_PHTEXT,	// .text segments
-					// _WW_CYPTREG_PHALL,	// All segments
-					// _WW_CYPTREG_SHDR,	// Select region using sections
-					// _WW_CYPTREG_SHTEXT,	// text section
-					// _WW_CYPTREG_SHDATA,	// data section
-					// _WW_CYPTREG_SHALL,	// text + data sections
-					opt_flag = _WW_CYPTREG_PHALL;
+					printf(YEL"[SHORT] : 'r'\n");
+					// MUST CHECK THE NEXT CHAR TO GET THE LEVEL
+					i++;
+					if (arg[i] != '0' && arg[i] != '1' &&
+						arg[i] != '2' && arg[i] != '3' &&
+						arg[i] != '4' && arg[i] != '5' &&
+						arg[i] != '6' && arg[i] != '7') {
+						// print message error
+						printf("LEVEL ERROR\n");
+					}
+					else {
+						// get the right _mode
+						printf("LEVEL IS %c\n", arg[i]);
+						if (arg[i] == '0')
+							// Select region using segments
+							opt_flag = _WW_CYPTREG_PHDR;
+						else if (arg[i] == '1')
+							// .text segments with x rights
+							opt_flag = _WW_CYPTREG_PHTEXTX;
+						else if (arg[i] == '2')
+							// .text segments
+							opt_flag = _WW_CYPTREG_PHTEXT;
+						else if (arg[i] == '3')
+							// All segments
+							opt_flag = _WW_CYPTREG_PHALL;
+						else if (arg[i] == '4')
+							// Select region using sections
+							opt_flag = _WW_CYPTREG_SHDR;
+						else if (arg[i] == '5')
+							// text section
+							opt_flag = _WW_CYPTREG_SHTEXT;
+						else if (arg[i] == '6')
+							// data section
+							opt_flag = _WW_CYPTREG_SHDATA;
+						else if (arg[i] == '7')
+							// text + data sections
+							opt_flag = _WW_CYPTREG_SHALL;
+					}
+					printf("arg[%d] : %c\n", i, arg[i]);
+					printf("\n"RESET);
 				}
 				else if (options[j].short_opt == 'p') {
 					// _WW_INJTREG_PAD,		// Insert inside segments paddings
 					opt_flag = _WW_INJTREG_PAD;
+					printf(YEL"[SHORT] : 'p'\n"RESET);
 				}
 				else if (options[j].short_opt == 's') {
 					// _WW_INJTREG_SFT,		// Insert at 0x0 and shift the rest
 					opt_flag = _WW_INJTREG_SFT;
+					printf(YEL"[SHORT] : 's'\n"RESET);
 				}
 					// _WW_INJTREG_END,		// Insert at the end of the file
-				else if (options[j].short_opt == 'h')
+				else if (options[j].short_opt == 'h') {
 					opt_flag = _WW_HELP;
+					printf(YEL"[SHORT] : 'h'\n"RESET);
+
+				}
 				set_options(_modes, opt_flag);
 				break;
 			}
 			else if (j + 1 == count) {
-				set_options(_modes, _WW_ERROR); // option_error
+				set_options(_modes, _WW_MODE_ERROR); // option_error
 				dprintf(STDERR_FILENO, "%s: unrecognized option '%c'\n", progname, arg[i]);
+				printf(YEL"[SHORT] : ERROR\n"RESET);
 				return;
 			}
 		}

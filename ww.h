@@ -57,6 +57,9 @@ enum	_ww_e_inject_region
 	_WW_INJTREG_END = 1024 // Insert at the end of the file
 };
 
+# define _WW_HELP 2048 		 // If the help option was chosen
+# define _WW_MODE_ERROR 4096 // If an incorrect option was chosen
+
 // Struct that hold options, it's used as an array
 typedef struct {
     const char short_opt;
