@@ -101,7 +101,7 @@ Elf64_Shdr *get_text_section_header() {
 	for (size_t i = 1; i < ehdr->e_shnum; i++) {
 		Elf64_Shdr *shdr = get_section_header(_mapped_data, i);
 		char *sh_name = (char *)(_mapped_data + strtab->sh_offset + shdr->sh_name);
-		if (strcmp(sh_name, ".text") == 0)
+		if (_ww_strcmp(sh_name, ".text") == 0)
 			return shdr;
 	}
 	return NULL;
