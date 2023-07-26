@@ -10,7 +10,8 @@ int main(int argc, char *argv[])
 	// 	return _ww_print_errors(_WW_ERR_BADARGNBR);
 
 	if (_ww_get_opt(argv, argc, &_modes) == _WW_ERROR)
-		return _ww_print_errors(_WW_ERR_BADARG);
+		return 1;
+
 	return 42;
 
 	if (_ww_map_file_into_memory(argv[1]) == _WW_ERROR)

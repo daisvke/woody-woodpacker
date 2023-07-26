@@ -51,19 +51,15 @@ static void process_short_opt(char *arg, uint16_t *_modes, char *progname) {
 			if (arg[i] == options[j].short_opt) {
 				 uint16_t opt_flag = 0;
 				if (options[j].short_opt == 'r') {
-					printf(YEL"[SHORT] : 'r'\n");
-					// MUST CHECK THE NEXT CHAR TO GET THE LEVEL
 					i++;
 					if (arg[i] != '0' && arg[i] != '1' &&
 						arg[i] != '2' && arg[i] != '3' &&
 						arg[i] != '4' && arg[i] != '5' &&
 						arg[i] != '6' && arg[i] != '7') {
-						// print message error
-						printf("LEVEL ERROR\n");
+						dprintf(STDERR_FILENO, "%s: unrecognized region level '%c'\n", progname, arg[i]);
+						set_options(_modes, _WW_MODE_ERROR);
 					}
 					else {
-						// get the right _mode
-						printf("LEVEL IS %c\n", arg[i]);
 						if (arg[i] == '0')
 							// Select region using segments
 							opt_flag = _WW_CYPTREG_PHDR;
@@ -89,16 +85,14 @@ static void process_short_opt(char *arg, uint16_t *_modes, char *progname) {
 							// text + data sections
 							opt_flag = _WW_CYPTREG_SHALL;
 					}
-					printf("arg[%d] : %c\n", i, arg[i]);
-					printf("\n"RESET);
 				}
 				else if (options[j].short_opt == 'p') {
-					// _WW_INJTREG_PAD,		// Insert inside segments paddings
+					// Insert inside segments paddings
 					opt_flag = _WW_INJTREG_PAD;
 					printf(YEL"[SHORT] : 'p'\n"RESET);
 				}
 				else if (options[j].short_opt == 's') {
-					// _WW_INJTREG_SFT,		// Insert at 0x0 and shift the rest
+					// Insert at 0x0 and shift the rest
 					opt_flag = _WW_INJTREG_SFT;
 					printf(YEL"[SHORT] : 's'\n"RESET);
 				}
@@ -149,10 +143,8 @@ int _ww_get_opt(char *argv[], int argc, uint16_t *_modes)
 			process_short_opt(*(argv + i), _modes, *argv);
 			argv[i][0] = '\0';
 		}
-		// NOTE: Careful _WW_ERROR is value 1 & _WW_CYPTREG_PHDR too
-		// if (is_option_set(opts, OPTION_ERROR))
-		// 	break;
-		// return _WW_ERROR;
+		if (_ww_is_option_set(_modes, _WW_MODE_ERROR))
+			return _WW_ERROR;
 	}
 
 	// ----------------------For testing----------------------------
