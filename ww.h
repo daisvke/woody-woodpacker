@@ -82,6 +82,7 @@ char	*_ww_utohex(unsigned long nb);
 void	_ww_dprintf(int fd, char *fmt, ...);
 
 int		_ww_print_errors(enum _ww_e_errors err_code);
+void	_ww_help(char *progname, int fd);
 
 int		_ww_get_opt(char *argv[], int argc, uint16_t *_modes);
 bool	_ww_is_option_set(uint16_t *options, uint16_t option_flag);

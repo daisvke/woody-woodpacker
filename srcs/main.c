@@ -4,6 +4,19 @@ unsigned char *_mapped_data;
 off_t       _file_size;
 uint16_t    _modes;
 
+void _ww_help(char *progname, int fd) {
+	_ww_dprintf(fd, "Usage: %s: [option(s)] [file(s)]\n", progname);
+	_ww_dprintf(fd, "Pack [files(s)] by encrypting sections or segments (a.out by default).\n");
+	_ww_dprintf(fd, " The options are: \n");
+	_ww_dprintf(fd, "  -r\e[4mlevel\e[0m,	--region=\e[4mlevel\e[0m		Select the region to encrypt\n");
+	// TODO: Explain for each level what will be encrypted here
+	// TODO: Add an underline to `level`
+	_ww_dprintf(fd, "  -p,		--padding		Select the padding injection method\n");
+	_ww_dprintf(fd, "  -s,		--shifting		Select the shifting injection method\n");
+	// TODO: Maybe be more clear about the code injection methods (?)
+	_ww_dprintf(fd, "  -h,		--help			Display this information\n");
+}
+
 void what_options() {
 	printf(YEL"What options are set: \n");
 	if (_ww_is_option_set(&_modes, _WW_CYPTREG_PHDR))
@@ -39,8 +52,15 @@ int main(int argc, char *argv[])
 	// if (argc != 2)
 	// 	return _ww_print_errors(_WW_ERR_BADARGNBR);
 
-	if (_ww_get_opt(argv, argc, &_modes) == _WW_ERROR)
+	if (_ww_get_opt(argv, argc, &_modes) == _WW_ERROR) {
+		_ww_help(argv[0], STDOUT_FILENO);
 		return 1;
+	}
+
+	if (_ww_is_option_set(&_modes, _WW_HELP)) {
+		_ww_help(argv[0], STDOUT_FILENO);
+		return 0;
+	}
 
 	what_options();
 	return 42;
