@@ -26,7 +26,7 @@ void elf_print_sections_name(Elf64_Ehdr *data)
 		printf("%s\n", strings + section_header.sh_name);
 	}
 	printf("\n");
-	
+
 }
 
 static int	_ww_authorize_encryption(int _type, int _flags)
@@ -76,7 +76,7 @@ static void _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
 			}
 			// If segment padding injection mode is on.
 			if (_modes & _WW_INJTREG_PAD)
-				_ww_inject_stub(_elf_header, _program_header);
+				_ww_inject_stub(_elf_header, _program_header, i);
 		}
 		_program_header =
 			(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);

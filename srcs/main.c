@@ -1,10 +1,8 @@
 #include "ww.h"
-#include "stub.h"
 
 unsigned char *_mapped_data;
 off_t       _file_size;
 uint16_t    _modes;
-unsigned char   *_stub = _stubgen;
 
 int main(int argc, char *argv[])
 {

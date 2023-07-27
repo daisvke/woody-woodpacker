@@ -14,8 +14,8 @@ _start:
 	mov		rdx, 13         ; String size of 'w'
     syscall                 ; Run write(rdi, rsi, rdx)
 
-    mov     r8, 0x8000000
-    add     r8, 0x1050 + 1
+    mov     r8, 0x0000000008000000
+    add     r8, 0x1050
     leave
 	jmp		r8
 

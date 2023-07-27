@@ -15,6 +15,9 @@
 
 /*-------------------------------------------------------*/
 
+/* Generated packed file name */
+# define _OUTFILE_NAME		"woody"
+
 /*  Colors */
 # define _WW_RED_COLOR		"\033[31m"
 # define _WW_GREEN_COLOR	"\033[32m"
@@ -60,7 +63,6 @@ enum	_ww_e_inject_region
 extern unsigned char	*_mapped_data;
 extern off_t			_file_size;
 extern uint16_t			_modes;
-extern unsigned char	*_stub;
 /*-------------------------------------------------------*/
 
 size_t	_ww_strlen(const char *s);
@@ -72,9 +74,11 @@ int		_ww_parse_argv(char *argv[]);
 int		_ww_map_file_into_memory(const char *filename);
 void	_ww_process_mapped_data();
 int		_ww_write_processed_data_to_file(void);
-void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header);
+void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_t i);
 
 void	xor_encrypt_decrypt(void *key, size_t key_length, void *data, size_t data_length);
 char	*_ww_keygen(const char *_charset, size_t _strength);
+
+Elf64_Shdr *get_section_header(void *f, int idx);
 
 #endif
