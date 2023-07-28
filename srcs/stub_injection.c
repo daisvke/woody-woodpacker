@@ -1,5 +1,66 @@
 #include "ww.h"
 
+void	_ww_shift_offsets_after_stub_insertion(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_t i, size_t _stub_size_with_pad)
+{
+	printf("e_entry address: %lx\n", _elf_header->e_entry);
+	_elf_header->e_entry = _program_header->p_vaddr + _program_header->p_filesz;
+	printf("NEW e_entry address: %lx\n", _elf_header->e_entry);
+	_program_header->p_filesz += sizeof(STUB);
+	_program_header->p_memsz += sizeof(STUB);
+	printf("NEW Segment size: %lu bytes\n\n" _WW_RESET_COLOR, (unsigned long)_program_header->p_filesz);
+
+	size_t	j = 1;
+	while (++i < _elf_header->e_phnum) {
+		Elf64_Phdr *_curr_program_header =
+			(Elf64_Phdr *)((void *)_program_header + j * _elf_header->e_phentsize);
+		_curr_program_header->p_offset += _stub_size_with_pad;
+		++j;
+	}
+
+
+	off_t _injection_addr = _program_header->p_vaddr + _program_header->p_filesz;
+	printf(_WW_YELLOW_COLOR "\n\nInjection start offset: %lx\n", _injection_addr);
+
+	// Getting next segment's header
+	Elf64_Phdr *_next_program_header =
+		(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
+	Elf64_Shdr *_last_text_shdr = NULL;
+
+	// Get a pointer to the first section header
+	Elf64_Shdr *section_header1 = (Elf64_Shdr *)(_mapped_data + _elf_header->e_shoff);
+	for (size_t i = 0; _injection_addr < section_header1[i].sh_offset &&
+		section_header1[i].sh_offset < _next_program_header->p_offset;
+		++i) {
+		_last_text_shdr = &section_header1[i];
+	}
+	if (_last_text_shdr) _last_text_shdr->sh_size += sizeof(STUB);
+
+	// printf("%s\n", section_header->sh_name);
+	// TODO REPLACE STRCMP
+	Elf64_Shdr *strtab = get_section_header(_mapped_data, _elf_header->e_shstrndx);
+
+
+	// Get a pointer to the first section header
+	Elf64_Shdr *section_header = (Elf64_Shdr *)(_mapped_data + _elf_header->e_shoff);
+
+	/* We iterate over each section header to find .text section name */
+	for (size_t i = 0; i < _elf_header->e_shnum; i++) {
+		Elf64_Shdr *shdr = get_section_header(_mapped_data, i);
+		char *section_name = (char *)(_mapped_data + strtab->sh_offset + shdr->sh_name);
+		printf("shname= %s\n", section_name);
+		if (strcmp(section_name, ".text") == 0)
+		{
+			for (size_t j = ++i; j < _elf_header->e_shnum; j++) {
+				// strtab->sh_size += sizeof(STUB);
+				shdr = get_section_header(_mapped_data, j);
+				shdr->sh_offset += _stub_size_with_pad;
+			}
+			break;
+		}
+	}
+	_elf_header->e_shoff += _stub_size_with_pad;
+}
+
 void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_t i)
 {
 	// Inject the stub only if the segment is executable and loadable.
@@ -26,48 +87,24 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_
 		{
 			// TODO MALLOC
 			unsigned char	_stub_with_pad[_stub_size_with_pad];
-			// printf("stub SIZE with pad: %ld; file SIZE: %ld\n", _stub_size_with_pad);
+			void			*_file_with_stub = malloc(_file_size + _stub_size_with_pad);//TODO protect+free
+			printf("stub SIZE with pad: %ld; file SIZE: %ld\n", _stub_size_with_pad, _file_size);
 			bzero(_stub_with_pad, 0); //TODO REPLACE BZERO
+			_ww_shift_offsets_after_stub_insertion(_elf_header, _program_header, i, _stub_size_with_pad);
+
+			_ww_memcpy(_file_with_stub, _mapped_data, _injection_addr);
 			_ww_memcpy(
-				_mapped_data + _injection_addr,
-				_mapped_data + _injection_addr + _stub_size_with_pad,
-				_file_size - _injection_addr - _stub_size_with_pad
+				(char *)_file_with_stub + _injection_addr + _stub_size_with_pad,
+				(char *)_mapped_data + _injection_addr,
+				_file_size - _injection_addr
 			);
-			_ww_memcpy(_stub_with_pad, _mapped_data, _stub_size_with_pad);
+			_ww_memcpy(_file_with_stub + _injection_addr, _stub_with_pad, _stub_size_with_pad);
 
-			Elf64_Ehdr *_elf_header = (Elf64_Ehdr *)_mapped_data;
-			_elf_header->e_entry = _program_header->p_vaddr + _program_header->p_filesz;
-			printf("e_entry address: %lx\n", _elf_header->e_entry);
-			_program_header->p_filesz += sizeof(STUB);
-			_program_header->p_memsz += sizeof(STUB);
-			printf("NEW Segment size: %lu bytes\n\n" _WW_RESET_COLOR, (unsigned long)_program_header->p_filesz);
+			// Unmap the file from memory
+			if (munmap(_mapped_data, _file_size) < 0)
+				return _ww_print_errors(_WW_ERR_MUNMAP);
 
-			while (++i < _elf_header->e_phnum) {
-				_program_header->p_offset += _stub_size_with_pad;
-				_program_header =
-					(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
-			}
-			for (size_t i = 0; i < _elf_header->e_shnum; i++)
-			{
-				// printf("%s\n", section_header->sh_name);
-				// TODO REPLACE STRCMP
-				Elf64_Ehdr *ehdr = (Elf64_Ehdr *)_mapped_data;
-				Elf64_Shdr *strtab = get_section_header(_mapped_data, ehdr->e_shstrndx);
-  
-				/* We iterate over each section header to find .text section name */
-				for (size_t i = 1; i < ehdr->e_shnum; i++) {
-					Elf64_Shdr *shdr = get_section_header(_mapped_data, i);
-					char *sh_name = (char *)(_mapped_data + strtab->sh_offset + shdr->sh_name);
-					if (strcmp(sh_name, ".text") == 0)
-					{
-						for (size_t j = ++i; j < ehdr->e_shnum; j++)
-							// strtab->sh_size += sizeof(STUB);
-							strtab->sh_offset += _stub_size_with_pad;
-						break;
-					}
-				}
-			}
-			_elf_header->e_shoff += _stub_size_with_pad;
+			_mapped_data = _file_with_stub;
 		}
 		else
 		{

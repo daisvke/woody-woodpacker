@@ -46,14 +46,18 @@ static int	_ww_authorize_encryption(int _type, int _flags)
 
 static void _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
 {
+	off_t	_phoff = _elf_header->e_phoff;
+	size_t	_phentsize = _elf_header->e_phentsize;
+	size_t _phnum = _elf_header->e_phnum;
 	// Iterate over the program headers
 	Elf64_Phdr *_program_header = (Elf64_Phdr *)(_mapped_data + _elf_header->e_phoff);
 
-	for (size_t i = 0; i < _elf_header->e_phnum; i++)
+	for (size_t i = 0; i < _phnum; i++)
 	{
 		// Check if the segment is for the "text" section
 		printf("-----------------------------------------------\n");
 		printf("* SEGMENT %ld -> type: %d\n", i, _program_header->p_type);
+		// off_t	_curr_phoff = _program_header->p_offset;
 		if (_ww_authorize_encryption(
 				_program_header->p_type,
 				_program_header->p_flags
@@ -79,7 +83,7 @@ static void _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
 				_ww_inject_stub(_elf_header, _program_header, i);
 		}
 		_program_header =
-			(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
+			(Elf64_Phdr *)(_mapped_data + _phoff + (i + 1) * _phentsize);
 		printf("\n");
 	}
 }
