@@ -25,11 +25,15 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_
 		if ((off_t)_stub_size_with_pad <= _padding_size)
 		{
 			// TODO MALLOC
-			unsigned char _stub_with_pad[_stub_size_with_pad];
-			printf("stub SIZE with pad: %ld; file SIZE: %ld\n", _stub_size_with_pad);
+			unsigned char	_stub_with_pad[_stub_size_with_pad];
+			// printf("stub SIZE with pad: %ld; file SIZE: %ld\n", _stub_size_with_pad);
 			bzero(_stub_with_pad, 0); //TODO REPLACE BZERO
-			_ww_memcpy(_stub_with_pad, _mapped_data, sizeof(STUB));
-			_ww_memcpy(_mapped_data + _injection_addr, _stub_with_pad, _stub_size_with_pad);
+			_ww_memcpy(
+				_mapped_data + _injection_addr,
+				_mapped_data + _injection_addr + _stub_size_with_pad,
+				_file_size - _injection_addr - _stub_size_with_pad
+			);
+			_ww_memcpy(_stub_with_pad, _mapped_data, _stub_size_with_pad);
 
 			Elf64_Ehdr *_elf_header = (Elf64_Ehdr *)_mapped_data;
 			_elf_header->e_entry = _program_header->p_vaddr + _program_header->p_filesz;
@@ -55,14 +59,15 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_
 					Elf64_Shdr *shdr = get_section_header(_mapped_data, i);
 					char *sh_name = (char *)(_mapped_data + strtab->sh_offset + shdr->sh_name);
 					if (strcmp(sh_name, ".text") == 0)
+					{
 						for (size_t j = ++i; j < ehdr->e_shnum; j++)
 							// strtab->sh_size += sizeof(STUB);
 							strtab->sh_offset += _stub_size_with_pad;
 						break;
+					}
 				}
 			}
 			_elf_header->e_shoff += _stub_size_with_pad;
-
 		}
 		else
 		{
