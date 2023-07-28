@@ -2,6 +2,14 @@
 
 void	_ww_shift_offsets_after_stub_insertion(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_t i, size_t _stub_size_with_pad)
 {
+
+	off_t _injection_addr = _program_header->p_vaddr + _program_header->p_filesz;
+	printf(_WW_YELLOW_COLOR "\n\nInjection start offset: %lx\n", _injection_addr);
+
+	// Getting next segment's header
+	Elf64_Phdr *_next_program_header =
+		(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
+
 	printf("e_entry address: %lx\n", _elf_header->e_entry);
 	_elf_header->e_entry = _program_header->p_vaddr + _program_header->p_filesz;
 	printf("NEW e_entry address: %lx\n", _elf_header->e_entry);
@@ -10,25 +18,20 @@ void	_ww_shift_offsets_after_stub_insertion(Elf64_Ehdr *_elf_header, Elf64_Phdr 
 	printf("NEW Segment size: %lu bytes\n\n" _WW_RESET_COLOR, (unsigned long)_program_header->p_filesz);
 
 	size_t	j = 1;
+	Elf64_Phdr *_curr_program_header = (Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
 	while (++i < _elf_header->e_phnum) {
-		Elf64_Phdr *_curr_program_header =
+		_curr_program_header =
 			(Elf64_Phdr *)((void *)_program_header + j * _elf_header->e_phentsize);
+		if ((off_t)_curr_program_header->p_offset > _injection_addr)
 		_curr_program_header->p_offset += _stub_size_with_pad;
 		++j;
 	}
 
-
-	off_t _injection_addr = _program_header->p_vaddr + _program_header->p_filesz;
-	printf(_WW_YELLOW_COLOR "\n\nInjection start offset: %lx\n", _injection_addr);
-
-	// Getting next segment's header
-	Elf64_Phdr *_next_program_header =
-		(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
 	Elf64_Shdr *_last_text_shdr = NULL;
 
 	// Get a pointer to the first section header
 	Elf64_Shdr *section_header1 = (Elf64_Shdr *)(_mapped_data + _elf_header->e_shoff);
-	for (size_t i = 0; _injection_addr < section_header1[i].sh_offset &&
+	for (size_t i = 0; _injection_addr < (off_t)section_header1[i].sh_offset &&
 		section_header1[i].sh_offset < _next_program_header->p_offset;
 		++i) {
 		_last_text_shdr = &section_header1[i];
