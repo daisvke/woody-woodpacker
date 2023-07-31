@@ -11,10 +11,16 @@ _start:
 	mov		rdx, 13         ; String size of 'w'
     syscall                 ; Run write(rdi, rsi, rdx)
 
-    ; Exit
-    mov		rax, 60         ; Exit syscall code
-    mov		rbx, 0          ; Exit status code
-    syscall
+   
+    mov     r8, 0x0000000008000000
+    add     r8, 0x1050 + 1
+    xor    rbp, rbp
+	jmp		r8 
+
+    ; ; Exit
+    ; mov		rax, 60         ; Exit syscall code
+    ; mov		rbx, 0          ; Exit status code
+    ; syscall
 
 ; String header that would be printed in stdout during execution
 ; of the output file.
