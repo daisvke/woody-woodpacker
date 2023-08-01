@@ -86,6 +86,7 @@ void	_ww_help(char *progname, int fd);
 
 int		_ww_get_opt(char *argv[], int argc, uint16_t *_modes);
 bool	_ww_is_option_set(uint16_t *options, uint16_t option_flag);
+int     _ww_set_options(uint16_t *options, uint16_t opt_flag);
 
 int		_ww_map_file_into_memory(const char *filename);
 void	_ww_process_mapped_data();

@@ -10,35 +10,30 @@ void _ww_help(char *progname, int fd) {
 	_ww_dprintf(fd, " The options are: \n");
 	_ww_dprintf(fd, "  -r\e[4mlevel\e[0m		Select the region to encrypt.\n");
 	_ww_dprintf(fd, "   The levels:\n");
-	_ww_dprintf(fd, "    \e[4m0\e[0m: _WW_CYPTREG_PHDR (this is maybe not needed).\n");
-	_ww_dprintf(fd, "    \e[4m1\e[0m: text segments with x rights.\n");
-	_ww_dprintf(fd, "    \e[4m2\e[0m: .text segments.\n");
-	_ww_dprintf(fd, "    \e[4m3\e[0m: all the segments.\n");
-	_ww_dprintf(fd, "    \e[4m4\e[0m: _WW_CYPTREG_SHDR (this is maybe not needed).\n");
-	_ww_dprintf(fd, "    \e[4m5\e[0m: text section.\n");
-	_ww_dprintf(fd, "    \e[4m6\e[0m: data section.\n");
-	_ww_dprintf(fd, "    \e[4m7\e[0m: text + data sections.\n");
+	_ww_dprintf(fd, "    \e[4m0\e[0m: text segments with x rights.\n");
+	_ww_dprintf(fd, "    \e[4m1\e[0m: .text segments.\n");
+	_ww_dprintf(fd, "    \e[4m2\e[0m: all the segments.\n");
+	_ww_dprintf(fd, "    \e[4m3\e[0m: text section.\n");
+	_ww_dprintf(fd, "    \e[4m4\e[0m: data section.\n");
+	_ww_dprintf(fd, "    \e[4m5\e[0m: text + data sections.\n");
 	_ww_dprintf(fd, "  -p,		--padding		Insert the code inside the segments padding.\n");
 	_ww_dprintf(fd, "  -s,		--shifting		Insert the code at 0x0 and shift the rest.\n");
 	_ww_dprintf(fd, "  -h,		--help			Display this information.\n");
 }
 
 void _ww_display_modes() {
-	if (_ww_is_option_set(&_modes, _WW_CYPTREG_PHDR))
-		_ww_dprintf(STDOUT_FILENO, "Region to encrypt: _WW_CYPTREG_PHDR (this is maybe not needed).\n");
-	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_PHTEXTX))
+	if (_ww_is_option_set(&_modes, _WW_CYPTREG_PHTEXTX) && _ww_set_options(&_modes, _WW_CYPTREG_PHDR))
 		_ww_dprintf(STDOUT_FILENO, "Region to encrypt: .text segments with x rights.\n");
-	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_PHTEXT))
+	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_PHTEXT) && _ww_set_options(&_modes, _WW_CYPTREG_PHDR))
 		_ww_dprintf(STDOUT_FILENO, "Region to encrypt: .text segments.\n");
-	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_PHALL))
+	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_PHALL) && _ww_set_options(&_modes, _WW_CYPTREG_PHDR))
 		_ww_dprintf(STDOUT_FILENO, "Region to encrypt: all the segments.\n");
-	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_SHDR))
-		_ww_dprintf(STDOUT_FILENO, "Region to encrypt: _WW_CYPTREG_SHDR (this is maybe not needed).\n");
-	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_SHTEXT))
+
+	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_SHTEXT) && _ww_set_options(&_modes, _WW_CYPTREG_SHDR))
 		_ww_dprintf(STDOUT_FILENO, "Region to encrypt: text section.\n");
-	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_SHDATA))
+	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_SHDATA) && _ww_set_options(&_modes, _WW_CYPTREG_SHDR))
 		_ww_dprintf(STDOUT_FILENO, "Region to encrypt: data section.\n");
-	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_SHALL))
+	else if (_ww_is_option_set(&_modes, _WW_CYPTREG_SHALL) && _ww_set_options(&_modes, _WW_CYPTREG_SHDR))
 		_ww_dprintf(STDOUT_FILENO, "Region to encrypt: text + data sections.\n");
 	else { // Setting a default region to encrypt
 		_modes |= _WW_CYPTREG_PHALL;
@@ -84,9 +79,9 @@ int main(int argc, char *argv[])
 	}
 	_ww_display_modes();
 
-    char *binary_name = _ww_get_bin_name(argv, argc);
-    if (binary_name == NULL)
-        return 1;
+	char *binary_name = _ww_get_bin_name(argv, argc);
+	if (binary_name == NULL)
+		return 1;
 
 	if (_ww_map_file_into_memory(binary_name) == _WW_ERROR)
 		return 1;

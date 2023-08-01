@@ -14,8 +14,9 @@ bool _ww_is_option_set(uint16_t *options, uint16_t option_flag) {
 	return (*options & option_flag) != 0;
 }
 
-static void set_options(uint16_t *options, uint16_t opt_flag) {
+int _ww_set_options(uint16_t *options, uint16_t opt_flag) {
 	*options |= opt_flag;
+    return 1;
 }
 
 static _ww_option* get_options(int *count) {
@@ -47,31 +48,25 @@ static void process_short_opt(char *arg, uint16_t *_modes, char *progname) {
 						arg[i] != '4' && arg[i] != '5' &&
 						arg[i] != '6' && arg[i] != '7') {
 						_ww_dprintf(STDERR_FILENO, "%s: unrecognized region level '%c'\n", progname, arg[i]);
-						set_options(_modes, _WW_MODE_ERROR);
+						_ww_set_options(_modes, _WW_MODE_ERROR);
 					}
 					else {
 						if (arg[i] == '0')
-							// Select region using segments
-							opt_flag = _WW_CYPTREG_PHDR;
-						else if (arg[i] == '1')
 							// .text segments with x rights
 							opt_flag = _WW_CYPTREG_PHTEXTX;
-						else if (arg[i] == '2')
+						else if (arg[i] == '1')
 							// .text segments
 							opt_flag = _WW_CYPTREG_PHTEXT;
-						else if (arg[i] == '3')
+						else if (arg[i] == '2')
 							// All segments
 							opt_flag = _WW_CYPTREG_PHALL;
-						else if (arg[i] == '4')
-							// Select region using sections
-							opt_flag = _WW_CYPTREG_SHDR;
-						else if (arg[i] == '5')
+						else if (arg[i] == '3')
 							// text section
 							opt_flag = _WW_CYPTREG_SHTEXT;
-						else if (arg[i] == '6')
+						else if (arg[i] == '4')
 							// data section
 							opt_flag = _WW_CYPTREG_SHDATA;
-						else if (arg[i] == '7')
+						else if (arg[i] == '5')
 							// text + data sections
 							opt_flag = _WW_CYPTREG_SHALL;
 					}
@@ -85,11 +80,11 @@ static void process_short_opt(char *arg, uint16_t *_modes, char *progname) {
 				else if (options[j].short_opt == 'h')
 					// Print the help message
 					opt_flag = _WW_HELP;
-				set_options(_modes, opt_flag);
+				_ww_set_options(_modes, opt_flag);
 				break;
 			}
 			else if (j + 1 == count) {
-				set_options(_modes, _WW_MODE_ERROR); // option_error
+				_ww_set_options(_modes, _WW_MODE_ERROR); // option_error
 				_ww_dprintf(STDERR_FILENO, "%s: unrecognized option '%c'\n", progname, arg[i]);
 				return;
 			}
@@ -111,11 +106,11 @@ static void process_long_opt(char *arg, uint16_t *_modes, char *progname) {
 				opt_flag = _WW_INJTREG_SFT;
 			else if (options[i].short_opt == 'h')
 				opt_flag = _WW_HELP;
-			set_options(_modes, opt_flag);
+			_ww_set_options(_modes, opt_flag);
 			return;
 		}
 	}
-	set_options(_modes, _WW_MODE_ERROR);
+	_ww_set_options(_modes, _WW_MODE_ERROR);
 	_ww_dprintf(STDERR_FILENO, "%s: unrecognized option '%s'\n", progname, arg);
 }
 
