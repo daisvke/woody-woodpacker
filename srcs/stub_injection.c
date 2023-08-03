@@ -26,6 +26,10 @@ void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
 			_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
 
 			Elf64_Ehdr	*_elf_header = (Elf64_Ehdr *)_mapped_data;
+			off_t	entry_offset =
+				_program_header->p_vaddr + _program_header->p_filesz - _elf_header->e_entry;
+			printf("e_entry offset: %lx\n", entry_offset);
+			
 			_elf_header->e_entry = _program_header->p_vaddr + _program_header->p_filesz;
 			printf("e_entry address: %lx\n", _elf_header->e_entry);
 			_program_header->p_filesz += sizeof(_stub);
