@@ -68,6 +68,8 @@ int		_ww_print_errors(enum _ww_e_errors err_code);
 
 int		_ww_parse_argv(char *argv[]);
 
+Elf64_Shdr *get_section_header(void *f, int idx);
+
 int		_ww_map_file_into_memory(const char *filename);
 void	_ww_process_mapped_data();
 int		_ww_write_processed_data_to_file(void);
