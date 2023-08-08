@@ -26,6 +26,23 @@ void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
 			_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
 
 			Elf64_Ehdr	*_elf_header = (Elf64_Ehdr *)_mapped_data;
+			off_t	entry_offset =
+				_program_header->p_vaddr + _program_header->p_filesz - _elf_header->e_entry;
+			printf("e_entry offset: %lx\n", entry_offset);
+
+			off_t		_text_section_addr = 0;
+			Elf64_Shdr	*_strtab = get_section_header(_mapped_data, _elf_header->e_shstrndx);
+			/* We iterate over each section header to find .text section name */
+			for (size_t i = 0; i < _elf_header->e_shnum; i++) {
+				Elf64_Shdr *shdr = get_section_header(_mapped_data, i);
+				char *section_name = (char *)(_mapped_data + _strtab->sh_offset + shdr->sh_name);
+				printf("shname= %s\n", section_name);
+				if (strcmp(section_name, ".text") == 0) _text_section_addr = shdr->sh_addr;
+			}
+			off_t	_segment_offset = _program_header->p_memsz;
+
+			printf("============>%lx %lx\n", entry_offset, _segment_offset);
+			
 			_elf_header->e_entry = _program_header->p_vaddr + _program_header->p_filesz;
 			printf("e_entry address: %lx\n", _elf_header->e_entry);
 			_program_header->p_filesz += sizeof(_stub);
