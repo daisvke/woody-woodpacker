@@ -38,7 +38,7 @@ void	_ww_shift_offsets_after_stub_insertion(Elf64_Ehdr *_elf_header, Elf64_Phdr 
 
 	}
 	if (_last_text_shdr) {
-		printf("=============================)=qdsfqsdfsdfsdfqsf\n");
+		printf("==============================qdsfqsdfsdfsdfqsf\n");
 		_last_text_shdr->sh_size += sizeof(STUB);
 	}
 
