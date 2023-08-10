@@ -1,28 +1,32 @@
-[BITS 64]
-; We will use the 64-bit registers as 32-bit instructions
-; have the same size.
+bits 64
+
+section .text
 global _start
 
 _start:
-    push    rbp
-    mov     rbp, rsp
+    lea r8, [rel _start]                ; Get _start address
+    mov r9, r8                          ; Copy that to r9
+    sub r9, [r8 + main_entry_offset]    ; Put address of main entry into r9
+    jmp short ender
 
-    ; Print using write syscall
-    mov		rax, 1          ; Write syscall code
-    mov		rdi, 1          ; stdout code
-    lea     rsi, [rel w]    ; load relative address of 'w' into rsi
-	mov		rdx, 13         ; String size of 'w'
-    syscall                 ; Run write(rdi, rsi, rdx)
+starter:
+    mov eax, 1      ; system call number for sys_write
+    mov edi, 1      ; file descriptor (stdout)
+    pop rsi         ; pop the address of the string from the stack
+    mov rdx, 14     ; length of the string
+    syscall         ; call the kernel
 
-    mov     r8, 0x0000000008000000
-    add     r8, 0x1050
-    leave
-	jmp		r8
+    xor eax, eax    ; Reset registers
+    xor edi, edi
+    xor rsi, rsi
+    xor rdx, rdx    ; Segfaults without this
+    push r9         ; Push the main entry address to the stack
+    ret             ; On return, we will jump to the pushed address
 
-    ; Exit
-    ; mov		rax, 60         ; Exit syscall code
-    ; mov		rbx, 0          ; Exit status code
-    ; syscall
+ender:
+    call starter    ; put the address of the string on the stack
+    db '....WOODY....', 10 ; newline-terminated string
+    main_entry_offset    dq 0x000000000000016d
 
 ; String header that would be printed in stdout during execution
 ; of the output file.
@@ -34,4 +38,3 @@ _start:
 ; It is stored in the same region of memory as the .text section.
 ; In this way we avoid having to use other sections of the original
 ; file (that would most likely be encrypted anyway).
-w db "....WOODY....", 10

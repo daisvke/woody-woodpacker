@@ -17,31 +17,40 @@ void	_ww_shift_offsets_after_stub_insertion(Elf64_Ehdr *_elf_header, Elf64_Phdr 
 	_program_header->p_memsz += sizeof(STUB);
 	printf("NEW Segment size: %lu bytes\n\n" _WW_RESET_COLOR, (unsigned long)_program_header->p_filesz);
 
-	size_t	j = 1;
-	Elf64_Phdr *_curr_program_header = (Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
-	while (++i < _elf_header->e_phnum) {
-		_curr_program_header =
-			(Elf64_Phdr *)((void *)_program_header + j * _elf_header->e_phentsize);
-		if ((off_t)_curr_program_header->p_offset > _injection_addr)
-		_curr_program_header->p_offset += _stub_size_with_pad;
-		++j;
-	}
 
-	Elf64_Shdr *_last_text_shdr = NULL;
 
-	// Get a pointer to the first section header
-	Elf64_Shdr *section_header1 = (Elf64_Shdr *)(_mapped_data + _elf_header->e_shoff);
-	for (size_t i = 0; _injection_addr < (off_t)section_header1[i].sh_offset &&
-		section_header1[i].sh_offset < _next_program_header->p_offset;
-		++i) {
-		_last_text_shdr = &section_header1[i];
-	}
-	if (_last_text_shdr) _last_text_shdr->sh_size += sizeof(STUB);
 
 	// printf("%s\n", section_header->sh_name);
 	// TODO REPLACE STRCMP
 	Elf64_Shdr *strtab = get_section_header(_mapped_data, _elf_header->e_shstrndx);
 
+
+	Elf64_Shdr *_last_text_shdr = NULL;
+
+	// Get a pointer to the first section header
+	Elf64_Shdr *section_header1 = (Elf64_Shdr *)(_mapped_data + _elf_header->e_shoff);
+	for (size_t j = 0; section_header1[j].sh_offset < _next_program_header->p_offset;
+		++j) {
+		_last_text_shdr = &section_header1[j];
+				Elf64_Shdr *shdr = get_section_header(_mapped_data, j);
+		char *section_name = (char *)(_mapped_data + strtab->sh_offset + shdr->sh_name);
+		printf("=======>shname= %s\n", section_name);
+
+	}
+	if (_last_text_shdr) {
+		printf("=============================)=qdsfqsdfsdfsdfqsf\n");
+		_last_text_shdr->sh_size += sizeof(STUB);
+	}
+
+	size_t	j = 1;
+	Elf64_Phdr *_curr_program_header = (Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
+	while (j < _elf_header->e_phnum) {
+		_curr_program_header =
+			(Elf64_Phdr *)((void *)_program_header + j * _elf_header->e_phentsize);
+		if ((off_t)_curr_program_header->p_offset > _injection_addr)
+			_curr_program_header->p_offset += _stub_size_with_pad;
+		++j;
+	}
 
 	// Get a pointer to the first section header
 	Elf64_Shdr *section_header = (Elf64_Shdr *)(_mapped_data + _elf_header->e_shoff);
