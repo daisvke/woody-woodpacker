@@ -64,11 +64,11 @@ int _ww_map_file_into_memory(const char *filename)
 int _ww_write_processed_data_to_file(void)
 {
     // 0755: rwx for owner, rx for group and others
-    int _outfile_fd = open(_OUTFILE_NAME, O_CREAT | O_WRONLY | O_TRUNC, 0755);
+    int _outfile_fd = open(_WW_OUTFILE_NAME, O_CREAT | O_WRONLY | O_TRUNC, 0755);
     if (_outfile_fd == -1)
         return _ww_print_errors(_WW_ERR_OUTFILE);
 
-    size_t _file_size_with_stub = _file_size + (((sizeof(STUB)/16) +1)*16);
+    size_t _file_size_with_stub = _file_size + (((sizeof(9)/16) +1)*16);
     ssize_t _bytes_written = write(_outfile_fd, _mapped_data, _file_size_with_stub);
     if (_bytes_written < 0)
         _ww_print_errors(_WW_ERR_WRITEFILE);
