@@ -2,19 +2,20 @@
 #       TITLE                                                                  #
 # **************************************************************************** #
 NAME	= woody_woodpacker
+OUTFILE	= woody
 
 # **************************************************************************** #
 #       COMMANDS                                                               #
 # **************************************************************************** #
 CC = cc
 
-ASM		= nasm
+ASM		= nasm $(ASFLAGS)
 ASFLAGS	= -f elf64
 
 # **************************************************************************** #
 #       FLAGS                                                                  #
 # **************************************************************************** #
-CFLAGS = -Wall -Wextra -g #-Werror
+CFLAGS = -Wall -Wextra -g #-Werror 
 
 # **************************************************************************** #
 #       SOURCES                                                                #
@@ -29,12 +30,13 @@ ASM_SRCS		= $(addprefix $(ASM_SRCS_DIR), $(ASM_SRCS_FILES)%.s)
 
 STUB_SRCS_DIR	= $(SRCS_DIR)unpacker/
 STUB_SRCS_FILES	= stub.s
-STUB_SRCS		= $(addprefix $(STUB_SRCS_DIR), $(STUB_SRCS_FILES))
+STUB_SRCS		= $(addprefix $(STUB_SRCS_DIR), $(STUB_SRCS_FILES)%.s)
 
 # **************************************************************************** #
 #       INCLUDES                                                               #
 # **************************************************************************** #
-INCS 		= errors.h ww.h
+INCS 		= errors.h ww.h $(STUB_HDR)
+STUB_HDR	= stub.h
 
 # **************************************************************************** #
 #       OBJ                                                                    #
@@ -53,19 +55,24 @@ STUB_OBJS		= $(addprefix $(STUB_OBJS_DIR), $(STUB_SRCS_FILES:.s=.o))
 # **************************************************************************** #
 $(ASM_OBJS_DIR)%.o : $(ASM_SRCS_DIR)%.s
 	mkdir -p $(ASM_OBJS_DIR)
-	$(ASM) $(ASFLAGS) $< -o $@
+	$(ASM) $< -o $@
 
-$(OBJS_DIR)%.o : $(SRCS_DIR)%.c $(STUB_SRCS) $(INCS)
-	$(CC) $(CFLAGS) -I. -c $< -o $@ -DSTUB=\"`/usr/bin/hexdump -ve '"\\\x" 1/1 "%02x"' $(STUB_OBJS)`\"
+$(OBJS_DIR)%.o : $(SRCS_DIR)%.c $(INCS)
+	$(CC) -I. -c $(CFLAGS) $< -o $@
 
-$(NAME) : $(STUB_OBJS) $(ASM_OBJS) $(OBJS)
+$(NAME) : $(OBJS) $(ASM_OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(ASM_OBJS) -o $(NAME)
 
-$(STUB_OBJS) : $(STUB_SRCS)
-	mkdir -p $(STUB_OBJS_DIR)
-	$(ASM) -f bin $< -o $@
+$(STUB_OBJS_DIR)%.o : $(STUB_SRCS_DIR)%.s
+	mkdir -p $(OBJS_DIR)
+	echo "unsigned char _stub[] = {" > $(STUB_HDR)
+	nasm -f bin $< -o $@
 
-all: $(NAME)
+all: generate_hex_stub $(NAME)
+
+generate_hex_stub : $(STUB_OBJS)
+	xxd -i < $(STUB_OBJS) >> $(STUB_HDR)
+	echo "};" >> $(STUB_HDR)
 
 debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
@@ -74,11 +81,11 @@ clean:
 	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR)
 
 fclean: clean
-	rm -f $(NAME) $(OUTFILE)
+	rm -f $(NAME) $(OUTFILE) $(STUB_HDR)
 
 re: fclean all
 
 # **************************************************************************** #
 #       PHONY                                                                  #
 # **************************************************************************** #
-.PHONY: all clean fclean re debug
+.PHONY: all clean fclean re debugm
