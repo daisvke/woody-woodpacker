@@ -76,7 +76,7 @@ static void _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
 			}
 			// If segment padding injection mode is on.
 			if (_modes & _WW_INJTREG_PAD)
-				_ww_inject_stub(_elf_header, _program_header);
+				_ww_inject_stub(_elf_header, _program_header, i);
 		}
 		_program_header =
 			(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);

@@ -73,7 +73,8 @@ int _ww_write_processed_data_to_file(void)
         return _ww_print_errors(_WW_ERR_OUTFILE);
     }
 
-    ssize_t _bytes_written = write(_outfile_fd, _mapped_data, _file_size);
+    size_t _file_size_with_stub = _file_size + ((77/_WW_PAGE_SIZE) +1)*_WW_PAGE_SIZE;//replace by sizeof _stub
+    ssize_t _bytes_written = write(_outfile_fd, _mapped_data, _file_size_with_stub);
     if (_bytes_written < 0)
         _ww_print_errors(_WW_ERR_WRITEFILE);
     close(_outfile_fd);
