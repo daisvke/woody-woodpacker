@@ -58,7 +58,7 @@ void _ww_shift_offsets_after_stub_insertion(Elf64_Ehdr *_elf_header, Elf64_Phdr 
 		printf("shname= %s\n", section_name);
 		if (strcmp(section_name, ".text") == 0)
 		{
-			for (size_t j = ++i; j < _elf_header->e_shnum; j++)
+			for (size_t j = i + 1; j < _elf_header->e_shnum; j++)
 			{
 				// strtab->sh_size += sizeof(_stub);
 				shdr = get_section_header(_mapped_data, j);
@@ -86,7 +86,7 @@ void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_
 		printf(_WW_YELLOW_COLOR "\n\nInjection start offset: %lx\n", _injection_offset);
 
 		// Getting next segment's header
-		Elf64_Phdr *_next_program_header = 
+		Elf64_Phdr *_next_program_header =
 			(Elf64_Phdr *)((void *)_program_header + _elf_header->e_phentsize);
 		off_t	_padding_size = _next_program_header->p_vaddr - _injection_addr;
 
