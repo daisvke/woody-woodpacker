@@ -80,9 +80,9 @@ int _ww_write_processed_data_to_file(void)
     close(_outfile_fd);
 
     // Unmap the file from memory
-    if (munmap(_mapped_data, _file_size) < 0)
-    {
-        return _ww_print_errors(_WW_ERR_MUNMAP);
-    }
+    // if (munmap(_mapped_data, _file_size) < 0)
+    // {
+    //     return _ww_print_errors(_WW_ERR_MUNMAP);
+    // }
     return 0;
 }

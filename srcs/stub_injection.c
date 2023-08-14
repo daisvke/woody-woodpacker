@@ -31,6 +31,7 @@ void _ww_shift_offsets_after_stub_insertion(Elf64_Ehdr *_elf_header, Elf64_Phdr 
 	}
 	if (_last_text_shdr)
 	{
+		printf("====================last txt\n");
 		_last_text_shdr->sh_size += sizeof(_stub);
 	}
 
@@ -51,24 +52,25 @@ void _ww_shift_offsets_after_stub_insertion(Elf64_Ehdr *_elf_header, Elf64_Phdr 
 	Elf64_Shdr *section_header = (Elf64_Shdr *)(_mapped_data + _elf_header->e_shoff);
 
 	/* We iterate over each section header to find .text section name */
-	for (size_t i = 0; i < _elf_header->e_shnum; i++)
+	for (size_t j = 0; j < _elf_header->e_shnum; j++)
 	{
-		Elf64_Shdr *shdr = get_section_header(_mapped_data, i);
+		Elf64_Shdr *shdr = get_section_header(_mapped_data, j);
 		char *section_name = (char *)(_mapped_data + strtab->sh_offset + shdr->sh_name);
 		printf("shname= %s\n", section_name);
-		if (strcmp(section_name, ".text") == 0)
-		{
-			for (size_t j = i + 1; j < _elf_header->e_shnum; j++)
-			{
+		// if (strcmp(section_name, ".text") == 0)
+		// {
+		// 	for (size_t k = ++j; k < _elf_header->e_shnum; k++)
+		// 	{
 				// strtab->sh_size += sizeof(_stub);
 				shdr = get_section_header(_mapped_data, j);
+				section_name = (char *)(_mapped_data + strtab->sh_offset + shdr->sh_name);
 				printf("IN shname= %s, addr: %lx\n", section_name,shdr->sh_addr);
-				if (shdr->sh_addr > _injection_addr){
+				if ((off_t)shdr->sh_addr > _injection_addr){
 					printf("stub size with pad added!\n");
 					shdr->sh_offset += _stub_size_with_pad;	section_name = (char *)(_mapped_data + strtab->sh_offset + shdr->sh_name);
-				}
-			}
-			break;
+				// }
+			// }
+			// break;
 		}
 	}
 	_elf_header->e_shoff += _stub_size_with_pad;
@@ -96,7 +98,7 @@ void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_
 
 		// if ((off_t)sizeof(_stub) <= _padding_size)
 		// {
-			_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
+			// _ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
 
 			Elf64_Ehdr	*_elf_header = (Elf64_Ehdr *)_mapped_data;
 			off_t	entry_offset =
@@ -128,6 +130,32 @@ void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_
 				"Padding size is smaller than the code to be injected."
 				);
 			_ww_shift_offsets_after_stub_insertion(_elf_header, _program_header, i);
+
+	size_t _stub_size_with_pad = ((sizeof(_stub) /_WW_PAGE_SIZE) + 1) * _WW_PAGE_SIZE;
+
+				// TODO MALLOC
+	unsigned char   _stub_with_pad[_stub_size_with_pad];
+	void                    *_file_with_stub = malloc(_file_size + _stub_size_with_pad);//TODO protect+free
+	// memset(_file_with_stub + _injection_addr, 0, _file_size + _stub_size_with_pad); //TODO REPLACE BZERO
+	memset(_stub_with_pad, 0, _stub_size_with_pad);
+	_ww_memcpy(_stub_with_pad, _stub, sizeof(_stub));
+	printf("** varstubszwith pad: %ld;  stub SIZE with pad: %ld; file SIZE: %ld, injcaddr: %lx\n", _stub_size_with_pad,sizeof(_stub_with_pad), _file_size, _injection_addr);
+	memset(_file_with_stub, 0, _file_size + _stub_size_with_pad);
+	_ww_memcpy(_file_with_stub, _mapped_data, _injection_offset);
+	_ww_memcpy(
+			_file_with_stub + _injection_offset + _stub_size_with_pad,
+			_mapped_data + _injection_offset,
+			_file_size - _injection_offset
+	);
+	_ww_memcpy(_file_with_stub + _injection_offset, _stub_with_pad, _stub_size_with_pad);
+
+	// Unmap the file from memory
+	if (munmap(_mapped_data, _file_size) < 0)
+			return _ww_print_errors(_WW_ERR_MUNMAP);
+
+	_mapped_data = _file_with_stub;
 		// }
 	}
+
+
 }
