@@ -39,7 +39,7 @@ Elf64_Shdr *get_text_section_header()
 	{
 		Elf64_Shdr *_shdr = get_section_header(_mapped_data, _i);
 		char *_sh_name = (char *)(_mapped_data + _strtab->sh_offset + _shdr->sh_name);
-		if (_ww_strncmp(_sh_name, ".text", 5) == 0) // TODO replace strcmp
+		if (_ww_strncmp(_sh_name, ".text", 5) == 0)
 			return _shdr;
 	}
 	return NULL;
