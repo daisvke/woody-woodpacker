@@ -33,10 +33,10 @@ int _ww_map_file_into_memory(const char *filename)
     // Determine the file size by moving the cursor till the end
     _file_size = lseek(_fd, 0, SEEK_END);
     if (_file_size < 0)
-        return _ww_print_errors(_WW_ERR_RLSEEK);
+        return _ww_print_errors(_WW_ERR_LSEEK);
     // Put back the cursor at the beginning of the file
     if (lseek(_fd, 0, SEEK_SET < 0))
-        return _ww_print_errors(_WW_ERR_RLSEEK);
+        return _ww_print_errors(_WW_ERR_LSEEK);
 
     /* Map the file into memory
         - PROT_READ: read-only access
@@ -52,7 +52,7 @@ int _ww_map_file_into_memory(const char *filename)
     if (_mapped_data == MAP_FAILED)
     {
         close(_fd);
-        return _ww_print_errors(_WW_ERR_ALLOCMEM);
+        return _ww_print_errors(_WW_ERR_MMAP);
     }
     close(_fd); /* No need to keep the fd since the file is mapped */
 
@@ -68,8 +68,9 @@ int _ww_write_processed_data_to_file(void)
     if (_outfile_fd == -1)
     {
         // Unmap the file from memory
-        // if (munmap(_mapped_data, _file_size) < 0)
-        //     _ww_print_errors(_WW_ERR_MUNMAP);
+        if (_modes & _WW_INJECTREG_PADDING)
+            if (munmap(_mapped_data, _file_size) < 0)
+                _ww_print_errors(_WW_ERR_MUNMAP);
         return _ww_print_errors(_WW_ERR_OUTFILE);
     }
 

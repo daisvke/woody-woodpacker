@@ -13,10 +13,6 @@ int _ww_parse_argv(char *argv[])
 	// _modes |= _WW_CRYPTREG_SHTEXT,	 	// text section
 	// _modes |= _WW_CRYPTREG_SHDATA,	 	// data section
 	// _modes |= _WW_CRYPTREG_SHALL			// text + data sections
-
-	// Unpacker and stub insertion region in the target file
-	// _modes |= _WW_INJECTREG_SFT,			// Insert at 0x0 and shift the rest
-	// _modes |= _WW_INJECTREG_END			// Insert at the end of the file
 	// --------------------------------------------------------------
 	return 0;
 }
