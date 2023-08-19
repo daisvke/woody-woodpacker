@@ -7,22 +7,21 @@ OUTFILE	= woody
 # **************************************************************************** #
 #       COMMANDS                                                               #
 # **************************************************************************** #
-CC = cc
-
+CC		= cc
 ASM		= nasm $(ASFLAGS)
 ASFLAGS	= -f elf64
 
 # **************************************************************************** #
 #       FLAGS                                                                  #
 # **************************************************************************** #
-CFLAGS = -Wall -Wextra -g #-Werror 
+CFLAGS	= -Wall -Wextra -g #-Werror 
 
 # **************************************************************************** #
 #       SOURCES                                                                #
 # **************************************************************************** #
-SRCS_DIR	= srcs/
-SRCS_FILES	= $(notdir $(wildcard $(SRCS_DIR)*.c))
-SRCS		= $(addprefix $(SRCS_DIR), $(SRCS_FILES)%.c)
+SRCS_DIR		= srcs/
+SRCS_FILES		= $(notdir $(wildcard $(SRCS_DIR)*.c))
+SRCS			= $(addprefix $(SRCS_DIR), $(SRCS_FILES)%.c)
 
 ASM_SRCS_DIR	= srcs/
 ASM_SRCS_FILES	= $(notdir $(wildcard $(ASM_SRCS_DIR)*.s))
@@ -35,8 +34,8 @@ STUB_SRCS		= $(addprefix $(STUB_SRCS_DIR), $(STUB_SRCS_FILES)%.s)
 # **************************************************************************** #
 #       INCLUDES                                                               #
 # **************************************************************************** #
-INCS 		= errors.h ww.h $(STUB_HDR)
-STUB_HDR	= stub.h
+INCS 			= errors.h ww.h $(STUB_HDR)
+STUB_HDR		= stub.h
 
 # **************************************************************************** #
 #       OBJ                                                                    #
