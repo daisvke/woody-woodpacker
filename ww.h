@@ -36,17 +36,20 @@
 // Width of the key
 # define _WW_KEYSTRENGTH	18
 
+/*-------------------------------------------------------*/
+// Modes
+
 // Region from the source file to encrypt
 enum	_ww_e_crypt_region
 {
-	_WW_CYPTREG_PHDR = 1,	 // Select region using segments
-	_WW_CYPTREG_PHTEXTX = 2, // .text segments with x rights
-	_WW_CYPTREG_PHTEXT = 4,	 // .text segments
-	_WW_CYPTREG_PHALL = 8,	 // All segments
-	_WW_CYPTREG_SHDR = 16,	 // Select region using sections
-	_WW_CYPTREG_SHTEXT = 32, // text section
-	_WW_CYPTREG_SHDATA = 64, // data section
-	_WW_CYPTREG_SHALL = 128	 // text + data sections
+	_WW_CRYPTREG_PHDR = 1,	 // Select region using segments
+	_WW_CRYPTREG_PHTEXTX = 2, // .text segments with x rights
+	_WW_CRYPTREG_PHTEXT = 4,	 // .text segments
+	_WW_CRYPTREG_PHALL = 8,	 // All segments
+	_WW_CRYPTREG_SHDR = 16,	 // Select region using sections
+	_WW_CRYPTREG_SHTEXT = 32, // text section
+	_WW_CRYPTREG_SHDATA = 64, // data section
+	_WW_CRYPTREG_SHALL = 128	 // text + data sections
 
 	// Unpacker and stub insertion region in the target file
 };
@@ -54,9 +57,10 @@ enum	_ww_e_crypt_region
 // Unpacker and stub injection region in the target file
 enum	_ww_e_inject_region
 {
-	_WW_INJTREG_PAD = 256, // Insert inside segments paddings
-	_WW_INJTREG_SFT = 512, // Insert at 0x0 and shift the rest
-	_WW_INJTREG_END = 1024 // Insert at the end of the file
+	// Insert inside executable segment's padding
+	_WW_INJECTREG_PADDING = 256,
+	// Insert at the end of executable segemnt and shift the rest
+	_WW_INJECTREG_SHIFT = 512,
 };
 
 /*-------------------------------------------------------*/
@@ -67,6 +71,7 @@ extern uint16_t			_modes;
 /*-------------------------------------------------------*/
 
 size_t	_ww_strlen(const char *s);
+void    *_ww_memset(void *src, int c, size_t n);
 
 int		_ww_print_errors(enum _ww_e_errors err_code);
 
@@ -77,7 +82,7 @@ Elf64_Shdr *get_section_header(void *f, int idx);
 int		_ww_map_file_into_memory(const char *filename);
 void	_ww_process_mapped_data();
 int		_ww_write_processed_data_to_file(void);
-void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, size_t int32_t);
+void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header);
 
 void	xor_encrypt_decrypt(void *key, size_t key_length, void *data, size_t data_length);
 char	*_ww_keygen(const char *_charset, size_t _strength);

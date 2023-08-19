@@ -73,16 +73,18 @@ int _ww_write_processed_data_to_file(void)
         return _ww_print_errors(_WW_ERR_OUTFILE);
     }
 
-    size_t _file_size_with_stub = _file_size + ((77/_WW_PAGE_SIZE) +1)*_WW_PAGE_SIZE;//replace by sizeof _stub
-    ssize_t _bytes_written = write(_outfile_fd, _mapped_data, _file_size_with_stub);
+    size_t  _size = 0;
+    if (_modes & _WW_INJECTREG_PADDING) _size = _file_size;
+    else
+        _size = _file_size + ((77 / _WW_PAGE_SIZE) + 1) * _WW_PAGE_SIZE;
+    // Write the processed data to the outfile
+    ssize_t _bytes_written = write(_outfile_fd, _mapped_data, _size);
     if (_bytes_written < 0)
         _ww_print_errors(_WW_ERR_WRITEFILE);
+    if (!(_modes & _WW_INJECTREG_PADDING)) free(_mapped_data);
+    else // Unmap the file from memory
+        if (munmap(_mapped_data, _file_size) < 0)
+            return _ww_print_errors(_WW_ERR_MUNMAP);
     close(_outfile_fd);
-
-    // Unmap the file from memory
-    // if (munmap(_mapped_data, _file_size) < 0)
-    // {
-    //     return _ww_print_errors(_WW_ERR_MUNMAP);
-    // }
     return 0;
 }

@@ -21,3 +21,14 @@ size_t  _ww_strlen(const char *s)
         while (s[i]) ++i;
         return (i);
 }
+
+void    *_ww_memset(void *src, int c, size_t n)
+{
+        size_t  i;
+        char    *str;
+
+        str = src;
+        i = 0;
+        while (i < n) str[i++] = (unsigned char)c;
+        return (src);
+}
