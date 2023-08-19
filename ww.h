@@ -69,6 +69,7 @@ extern uint16_t			_modes;
 size_t	_ww_strlen(const char *s);
 void    *_ww_memset(void *src, int c, size_t n);
 void    *_ww_memcpy(void *dest, const void *src, size_t n);
+int		_ww_strncmp(const char *s1, const char *s2, size_t n);
 
 int		_ww_parse_argv(char *argv[]);
 
