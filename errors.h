@@ -14,7 +14,8 @@
 	"File architecture not suported. x86_64 only", \
 	"lseek: Failed to read file", \
 	"write: Failed to write to the file", \
-	"open: Failed to open/create output file" \
+	"open: Failed to open/create output file", \
+	"No .text section found! Aborting..." \
 }
 
 enum	_ww_e_errors
@@ -28,9 +29,10 @@ enum	_ww_e_errors
 	_WW_ERR_NOT64BITELF,
 	_WW_ERR_LSEEK,
 	_WW_ERR_WRITEFILE,
-	_WW_ERR_OUTFILE
+	_WW_ERR_OUTFILE,
+	_WW_ERR_NOTEXTSEC
 };
 
-void    *_ww_memcpy(void *dest, const void *src, size_t n);
+void	_ww_print_error_and_exit(enum _ww_e_errors err_code);
 
 #endif

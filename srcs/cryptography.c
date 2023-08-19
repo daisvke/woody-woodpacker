@@ -7,7 +7,7 @@
 char*	_ww_keygen(const char* _charset, size_t _strength)
 {
     char* 	_key = malloc((_strength + 1) * sizeof(char));
-	if (_key == NULL) _ww_print_errors(_WW_ERR_ALLOCMEM);
+	if (_key == NULL) _ww_print_error_and_exit(_WW_ERR_ALLOCMEM);
     int		_charset_length = _ww_strlen(_charset);
 
 	// Seed the random number generator according to the current time.

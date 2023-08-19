@@ -11,19 +11,19 @@ static int _ww_is_elf64(unsigned char *_mapped_data)
     return 0;
 }
 
-int _ww_map_file_into_memory(const char *filename)
+void _ww_map_file_into_memory(const char *filename)
 {
     int _fd = open(filename, O_RDONLY);
     if (_fd < 0)
-        return _ww_print_errors(_WW_ERR_OPENBIN);
+        _ww_print_error_and_exit(_WW_ERR_OPENBIN);
 
     // Determine the file size by moving the cursor till the end
     _file_size = lseek(_fd, 0, SEEK_END);
     if (_file_size < 0)
-        return _ww_print_errors(_WW_ERR_LSEEK);
+        _ww_print_error_and_exit(_WW_ERR_LSEEK);
     // Put back the cursor at the beginning of the file
     if (lseek(_fd, 0, SEEK_SET < 0))
-        return _ww_print_errors(_WW_ERR_LSEEK);
+        _ww_print_error_and_exit(_WW_ERR_LSEEK);
 
     /* Map the file into memory
         - PROT_READ: read-only access
@@ -39,16 +39,15 @@ int _ww_map_file_into_memory(const char *filename)
     if (_mapped_data == MAP_FAILED)
     {
         close(_fd);
-        return _ww_print_errors(_WW_ERR_MMAP);
+        _ww_print_error_and_exit(_WW_ERR_MMAP);
     }
     close(_fd); /* No need to keep the fd since the file is mapped */
 
     if (_ww_is_elf64(_mapped_data) == -1)
-        return _ww_print_errors(_WW_ERR_NOT64BITELF);
-    return 0;
+        _ww_print_error_and_exit(_WW_ERR_NOT64BITELF);
 }
 
-int _ww_write_processed_data_to_file(void)
+void    _ww_write_processed_data_to_file(void)
 {
     // 0755: rwx for owner, rx for group and others
     int _outfile_fd = open(_WW_PACKED_FILENAME, O_CREAT | O_RDWR | O_TRUNC, 0755);
@@ -57,22 +56,23 @@ int _ww_write_processed_data_to_file(void)
         // Unmap the file from memory
         if (_modes & _WW_INJECTREG_PADDING)
             if (munmap(_mapped_data, _file_size) < 0)
-                _ww_print_errors(_WW_ERR_MUNMAP);
-        return _ww_print_errors(_WW_ERR_OUTFILE);
+                _ww_print_error_and_exit(_WW_ERR_MUNMAP);
+        _ww_print_error_and_exit(_WW_ERR_OUTFILE);
     }
 
-    size_t  _size = 0;
-    if (_modes & _WW_INJECTREG_PADDING) _size = _file_size;
+    size_t _size = 0;
+    if (_modes & _WW_INJECTREG_PADDING)
+        _size = _file_size;
     else
         _size = _file_size + ((77 / _WW_PAGE_SIZE) + 1) * _WW_PAGE_SIZE;
     // Write the processed data to the outfile
     ssize_t _bytes_written = write(_outfile_fd, _mapped_data, _size);
     if (_bytes_written < 0)
-        _ww_print_errors(_WW_ERR_WRITEFILE);
-    if (!(_modes & _WW_INJECTREG_PADDING)) free(_mapped_data);
+        _ww_print_error_and_exit(_WW_ERR_WRITEFILE);
+    if (!(_modes & _WW_INJECTREG_PADDING))
+        free(_mapped_data);
     else // Unmap the file from memory
         if (munmap(_mapped_data, _file_size) < 0)
-            return _ww_print_errors(_WW_ERR_MUNMAP);
+            _ww_print_error_and_exit(_WW_ERR_MUNMAP);
     close(_outfile_fd);
-    return 0;
 }
