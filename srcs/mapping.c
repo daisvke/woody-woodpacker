@@ -60,13 +60,8 @@ void    _ww_write_processed_data_to_file(void)
         _ww_print_error_and_exit(_WW_ERR_OUTFILE);
     }
 
-    size_t _size = 0;
-    if (_modes & _WW_INJECTREG_PADDING)
-        _size = _file_size;
-    else
-        _size = _file_size + ((77 / _WW_PAGE_SIZE) + 1) * _WW_PAGE_SIZE;
     // Write the processed data to the outfile
-    ssize_t _bytes_written = write(_outfile_fd, _mapped_data, _size);
+    ssize_t _bytes_written = write(_outfile_fd, _mapped_data, _file_size);
     if (_bytes_written < 0)
         _ww_print_error_and_exit(_WW_ERR_WRITEFILE);
     if (!(_modes & _WW_INJECTREG_PADDING))

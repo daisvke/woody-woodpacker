@@ -59,6 +59,7 @@ void _ww_generate_new_file_with_parasite(off_t _injection_offset)
 		_ww_print_error_and_exit(_WW_ERR_MUNMAP);
 	// Link the new file to the global variable
 	_mapped_data = _file_with_stub;
+	_file_size += _stub_size_with_pad;
 }
 
 void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
@@ -78,22 +79,25 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
 		_program_header->p_filesz += sizeof(_stub);
 		_program_header->p_memsz += sizeof(_stub);
 
-		printf(_WW_YELLOW_COLOR "Injection start offset: %lx\n", _injection_offset);
-		printf("Padding size: %ld\n", _padding_size);
-		printf("Stub size: %ld\n", sizeof(_stub));
-		printf("e_entry offset from stub: %lx\n", _entry_offset);
-		printf("e_entry address: %lx\n\n", _elf_header->e_entry);
-
+		if (_modes & _WW_VERBOSE) {
+			printf(_WW_YELLOW_COLOR "Injection start offset: %lx\n", _injection_offset);
+			printf("Padding size: %ld\n", _padding_size);
+			printf("Stub size: %ld\n", sizeof(_stub));
+			printf("e_entry offset from stub: %lx\n", _entry_offset);
+			printf("e_entry address: %lx\n\n", _elf_header->e_entry);
+		}
 		// Insert inside executable segment's end padding if there is sufficent space
-		if ((off_t)sizeof(_stub) <= _padding_size)
-		{
-			printf("The shellcode is injected into the executable segment's padding.\n" _WW_RESET_COLOR);
+		if ((off_t)sizeof(_stub) <= _padding_size) {
+			if (_modes & _WW_VERBOSE)
+				printf("The shellcode is injected into the executable"
+					"segment's padding.\n" _WW_RESET_COLOR);
 			_modes |= _WW_INJECTREG_PADDING;
 			_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
 		}
 		else
 		{
-			printf("The executable segment's padding size is smaller than the code"
+			if (_modes & _WW_VERBOSE)
+				printf("The executable segment's padding size is smaller than the code"
 				   "to be injected.\nThe shellcode will be injected anyway and all data"
 				   "following the injection point will be shifted.\n" _WW_RESET_COLOR);
 			_ww_shift_offsets_for_stub_insertion(_elf_header, _injection_offset);

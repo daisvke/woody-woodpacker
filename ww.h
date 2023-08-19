@@ -23,10 +23,9 @@
 
 # define _WW_PACKED_FILENAME	"woody"
 
-/* Return */
 # define _WW_ERROR	1
 
-# define _WW_PAGE_SIZE	4096
+# define _WW_PAGE_SIZE		4096
 
 /* Encryption */
 // Charset used for the encryption key
@@ -36,12 +35,11 @@
 // Width of the key
 # define _WW_KEYSTRENGTH	18
 
-/*-------------------------------------------------------*/
-// Unpacker and stub injection region in the target file
-enum	_ww_e_inject_region
+enum	_ww_e_modes
 {
-	// Insert inside executable segment's padding
-	_WW_INJECTREG_PADDING = 256,
+	// Insert stub inside executable segment's padding
+	_WW_VERBOSE = 1,
+	_WW_INJECTREG_PADDING = 2
 };
 
 /*-------------------------------------------------------*/

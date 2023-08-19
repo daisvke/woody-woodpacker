@@ -35,7 +35,7 @@ xor_encrypt_decrypt:
 	; Doing cmp byte [rsi], 0 to check the end of the string instead of
 	; using a counter would terminate the process earlier if a null character
 	; is part of the data
-	mov		r10, rcx	; Assign data_length to r10
+	mov		r8, rcx	; Assign data_length to r10
 
 xor_loop:
 	; This code segment is a loop that iterates over the bytes
@@ -48,7 +48,7 @@ xor_loop:
 	
 	inc		rbx		; Go to next key char
 	inc		rsi		; Go to next data char
-	dec		r10
+	dec		r8
 
 	; Check if the end of the key is reached
 	cmp		byte [rbx], 0
@@ -59,7 +59,7 @@ xor_loop:
 ; The loop continues until all bytes of the data have been processed.
 continue_loop:
 	; Check if the end of the data is reached
-	cmp		r10, 0
+	cmp		r8, 0
 	; If not, continue loop
 	jne		xor_loop
 	; If reached, print the result
