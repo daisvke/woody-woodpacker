@@ -64,12 +64,12 @@ int _ww_map_file_into_memory(const char *filename)
 int _ww_write_processed_data_to_file(void)
 {
     // 0755: rwx for owner, rx for group and others
-    int _outfile_fd = open("woody", O_CREAT | O_WRONLY | O_TRUNC, 0755);
+    int _outfile_fd = open(_WW_PACKED_FILENAME, O_CREAT | O_RDWR | O_TRUNC, 0755);
     if (_outfile_fd == -1)
     {
         // Unmap the file from memory
-        if (munmap(_mapped_data, _file_size) < 0)
-            _ww_print_errors(_WW_ERR_MUNMAP);
+        // if (munmap(_mapped_data, _file_size) < 0)
+        //     _ww_print_errors(_WW_ERR_MUNMAP);
         return _ww_print_errors(_WW_ERR_OUTFILE);
     }
 

@@ -21,6 +21,8 @@
 # define _WW_YELLOW_COLOR	"\033[33m"
 # define _WW_RESET_COLOR	"\033[0m"
 
+# define _WW_PACKED_FILENAME	"woody"
+
 /* Return */
 # define _WW_ERROR	1
 
