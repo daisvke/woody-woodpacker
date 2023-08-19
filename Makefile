@@ -63,7 +63,7 @@ $(OBJS_DIR)%.o : $(SRCS_DIR)%.c $(INCS)
 $(NAME) : $(OBJS) $(ASM_OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(ASM_OBJS) -o $(NAME)
 
-$(STUB_OBJS_DIR)%.o : $(STUB_SRCS_DIR)%.s
+$(STUB_OBJS_DIR)%.o: $(STUB_SRCS_DIR)%.s
 	mkdir -p $(OBJS_DIR)
 	echo "unsigned char _stub[] = {" > $(STUB_HDR)
 	nasm -f bin $< -o $@
@@ -73,6 +73,10 @@ all: generate_hex_stub $(NAME)
 generate_hex_stub : $(STUB_OBJS)
 	xxd -i < $(STUB_OBJS) >> $(STUB_HDR)
 	echo "};" >> $(STUB_HDR)
+
+# Run the compilation + packer + packed file
+run: re
+	echo && valgrind ./woody_woodpacker resources/64bit-sample && ./woody
 
 debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)

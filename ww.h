@@ -37,21 +37,6 @@
 # define _WW_KEYSTRENGTH	18
 
 /*-------------------------------------------------------*/
-// Modes
-
-// Region from the source file to encrypt
-enum	_ww_e_crypt_region
-{
-	_WW_CRYPTREG_PHDR = 1,	 // Select region using segments
-	_WW_CRYPTREG_PHTEXTX = 2, // .text segments with x rights
-	_WW_CRYPTREG_PHTEXT = 4,	 // .text segments
-	_WW_CRYPTREG_PHALL = 8,	 // All segments
-	_WW_CRYPTREG_SHDR = 16,	 // Select region using sections
-	_WW_CRYPTREG_SHTEXT = 32, // text section
-	_WW_CRYPTREG_SHDATA = 64, // data section
-	_WW_CRYPTREG_SHALL = 128	 // text + data sections
-};
-
 // Unpacker and stub injection region in the target file
 enum	_ww_e_inject_region
 {
