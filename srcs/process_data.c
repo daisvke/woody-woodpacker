@@ -1,33 +1,5 @@
 #include "ww.h"
 
-// For testing
-void elf_print_header(Elf64_Ehdr *data)
-{
-	printf("Entry point : %ld\n", data->e_entry);
-	printf("Segment table address (relative) : + %4ld bytes\n", data->e_phoff);
-	printf("Number of entries in the segment table : %d\n", data->e_phnum);
-	printf("Section table address (relative) : + %4ld bytes\n", data->e_shoff);
-	printf("Number of entries in the section table : %d\n\n", data->e_shnum);
-}
-
-// For testing
-void elf_print_sections_name(Elf64_Ehdr *data)
-{
-	int i;
-
-	Elf64_Shdr *section_header_start = (Elf64_Shdr *)((void *)data + data->e_shoff);
-	Elf64_Shdr sections_string = section_header_start[data->e_shstrndx];
-	char *strings = (char *)((void *)data + sections_string.sh_offset);
-	Elf64_Shdr section_header;
-
-	for (i = 0; i < data->e_shnum; i++)
-	{
-		section_header = section_header_start[i];
-		printf("%s\n", strings + section_header.sh_name);
-	}
-	printf("\n");
-}
-
 static int _ww_authorize_encryption(int _type, int _flags)
 {
 	// Desactivate program header encryption
@@ -111,10 +83,6 @@ void _ww_process_mapped_data()
 
 	Elf64_Ehdr *_elf_header = (Elf64_Ehdr *)_mapped_data;
 
-	// For testing
-	// elf_print_header(elf_header);
-	// elf_print_sections_name(_elf_header);
-
 	// If selecting encryption region according to segments
 	if (_modes & _WW_CRYPTREG_PHDR)
 	{
@@ -129,7 +97,7 @@ void _ww_process_mapped_data()
 		if (!txt_shdr)
 			return;
 		xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + txt_shdr->sh_offset, txt_shdr->sh_size);
-		xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + txt_shdr->sh_offset, txt_shdr->sh_size);
+		// xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + txt_shdr->sh_offset, txt_shdr->sh_size);
 	}
 	// To encrypt everything from program header (excluded) to section header (excluded)
 	// size_t ph_size = elf_header->e_phentsize * elf_header->e_phnum;

@@ -30,9 +30,9 @@
 
 /* Encryption */
 // Charset used for the encryption key
-# define _WW_KEYCHARSET	"abcdefghijklmnopqrstuvwxyz" \
-						"ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
-						"0123456789"
+# define _WW_KEYCHARSET		"abcdefghijklmnopqrstuvwxyz" \
+							"ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+							"0123456789"
 // Width of the key
 # define _WW_KEYSTRENGTH	18
 
@@ -50,8 +50,6 @@ enum	_ww_e_crypt_region
 	_WW_CRYPTREG_SHTEXT = 32, // text section
 	_WW_CRYPTREG_SHDATA = 64, // data section
 	_WW_CRYPTREG_SHALL = 128	 // text + data sections
-
-	// Unpacker and stub insertion region in the target file
 };
 
 // Unpacker and stub injection region in the target file
@@ -59,8 +57,6 @@ enum	_ww_e_inject_region
 {
 	// Insert inside executable segment's padding
 	_WW_INJECTREG_PADDING = 256,
-	// Insert at the end of executable segemnt and shift the rest
-	_WW_INJECTREG_SHIFT = 512,
 };
 
 /*-------------------------------------------------------*/

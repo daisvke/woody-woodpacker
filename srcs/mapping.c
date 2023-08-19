@@ -11,19 +11,6 @@ static int _ww_is_elf64(unsigned char *_mapped_data)
     return 0;
 }
 
-/*
-    We grab the e_ident field of the mapped data to get the architecture (32-bit or 64-bit)
-    of the file.
-
-    e_ident: This field is an array of bytes that identifies the file as an ELF file.
-    It contains specific values at predefined offsets to signify the ELF format version,
-    class (32-bit or 64-bit), endianness, OS ABI, and more.
-
-    First fields of e_ident:
-    1. EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3 (4 bytes): These four bytes form the magic number
-        and are used to identify an ELF file. The values are usually 0x7F, 'E', 'L', and 'F'.
-    2. EI_CLASS (1 byte): This byte specifies the architecture of the file.
-*/
 int _ww_map_file_into_memory(const char *filename)
 {
     int _fd = open(filename, O_RDONLY);
