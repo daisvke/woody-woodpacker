@@ -56,10 +56,10 @@ int		_ww_strncmp(const char *s1, const char *s2, size_t n);
 
 int		_ww_parse_argv(char *argv[]);
 
-Elf64_Shdr *get_section_header(void *f, int idx);
+Elf64_Shdr *get_text_section_header(void);
 
 void	_ww_map_file_into_memory(const char *filename);
-void	_ww_process_mapped_data();
+void	_ww_process_mapped_data(void);
 void	_ww_write_processed_data_to_file(void);
 void	_ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header);
 

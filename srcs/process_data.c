@@ -58,6 +58,8 @@ void _ww_process_mapped_data()
 	char *_key = "abcdefghijklmnopqr\0";
 	printf("Generated key: %s\n", _key);
 
+	printf(".text section size: %ld\n", txt_shdr->sh_size);
+
 	xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + txt_shdr->sh_offset, txt_shdr->sh_size);
 	xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + txt_shdr->sh_offset, txt_shdr->sh_size);
 

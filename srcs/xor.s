@@ -3,7 +3,7 @@ bits 64
 ;----------------------------------------------------------------
 ; void	xor_encrypt_decrypt(
 ;	void *key, size_t key_length, void *data, size_t data_length)
-;		<rdi>			<rsi>			<rdx>			<rcx>
+;		<rdi>			<rsi>		<rdx>			<rcx>
 ;----------------------------------------------------------------
 ; In cryptography, the simple XOR cipher is a type of additive
 ; cipher, an encryption algorithm that operates, in binary,

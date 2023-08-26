@@ -72,6 +72,7 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
 		off_t _padding_size = _program_header[1].p_offset - _injection_offset;
 		off_t _entry_offset =
 			_program_header->p_vaddr + _program_header->p_filesz - _elf_header->e_entry;
+		Elf64_Shdr *txt_shdr = get_text_section_header();
 
 		// Update the entry point of the file to the stub's injection address
 		_elf_header->e_entry = _injection_addr;
@@ -89,7 +90,7 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
 		// Insert inside executable segment's end padding if there is sufficent space
 		if ((off_t)sizeof(_stub) <= _padding_size) {
 			if (_modes & _WW_VERBOSE)
-				printf("The shellcode is injected into the executable"
+				printf("The shellcode is injected into the executable "
 					"segment's padding.\n" _WW_RESET_COLOR);
 			_modes |= _WW_INJECTREG_PADDING;
 			_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
