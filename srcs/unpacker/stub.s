@@ -18,9 +18,40 @@ print_woody:
 	xor rsi, rsi	; key index
 	xor rcx, rcx	; .text index
 
-; uncrpyt_loop:
-; 	cmp 
-; uncrypt:
+    mov		rsi, r9	; Assign address of data to rsi
+    lea 	rbx, [key]	; Assign address of key to rbx
+
+xor_loop:
+	; This code segment is a loop that iterates over the bytes
+	; of the data, performs an XOR operation between the corresponding
+	; bytes of rsi and rbx, and replaces the original byte with the XORed
+	; value into rsi.
+	movzx	rax, byte [rbx]
+	xor		al, byte [rsi]
+	mov		byte [rsi], al
+	
+	inc		rbx		; Go to next key char
+	inc		rsi		; Go to next data char
+	dec		r8
+
+	; Check if the end of the key is reached
+	cmp		byte [rbx], 0
+	jne		continue_loop
+	; Reset the key pointer to the beginning
+	mov		rbx, rdi
+
+; The loop continues until all bytes of the data have been processed.
+continue_loop:
+	; Check if the end of the data is reached
+	cmp		r8, 0
+	; If not, continue loop
+	jne		xor_loop
+	; If reached, print the result
+	call	print_data
+	; And return from the function after putting back the caller's
+	; original values in the registers
+	leave	; mov rsp, rbp ; pop rbp
+	ret
 
 clean_return:
 	xor eax, eax    ; Reset registers
@@ -29,6 +60,15 @@ clean_return:
 	xor rdx, rdx    ; Segfaults without this
 	push r9         ; Push the main entry address to the stack
 	ret             ; On return, we will jump to the pushed address
+
+; Print the processed data
+print_data:
+    mov		rax, SYS_WRITE
+    mov		rdi, STDOUT
+    mov		rsi, rdx
+	mov		rdx, rcx
+    syscall
+	ret
 
 ender:
 	call print_woody
