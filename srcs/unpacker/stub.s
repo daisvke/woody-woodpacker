@@ -19,7 +19,7 @@ print_woody:
 	xor rcx, rcx	; .text index
 
     mov		rsi, r9	; Assign address of data to rsi
-    lea 	rbx, [key]	; Assign address of key to rbx
+    lea 	rbx, [rel key]	; Assign address of key to rbx
 
 xor_loop:
 	; This code segment is a loop that iterates over the bytes
@@ -63,8 +63,8 @@ clean_return:
 
 ; Print the processed data
 print_data:
-    mov		rax, SYS_WRITE
-    mov		rdi, STDOUT
+    mov		rax, 1
+    mov		rdi, 1
     mov		rsi, rdx
 	mov		rdx, rcx
     syscall
@@ -73,8 +73,8 @@ print_data:
 ender:
 	call print_woody
 	db '....WOODY....', 10 ; newline-terminated string
-	main_entry_offset_from_stub dq 0x000000000000016d
 	key db "abcdefghijklmnopqr"
+	main_entry_offset_from_stub dq 0x000000000000016d
 	key_length dq 0x0000000000000012
 	text_length dq 0x0000000000000161
 	; text_segment_offset dq 0x000000000000016d
