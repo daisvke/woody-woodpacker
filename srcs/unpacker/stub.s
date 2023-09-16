@@ -16,7 +16,7 @@ print_woody:
 	mov rdx, 14     ; length of the string
 	syscall         ; call the kernel
 
-	mov		r10, text_length	; Assign data_length to r10
+	mov		r10, [r8 + text_length]	; Assign data_length to r10
     mov		rsi, r9	            ; Assign address of data to rsi
 
     ; Load the address of the key string into rbx
@@ -59,8 +59,6 @@ clean_return:
 	xor rdx, rdx    ; Segfaults without this
 	xor r8, r8
 	xor r11, r11
-	xor r12, r12
-	xor r13, r13
 	push r9         ; Push the main entry address to the stack
 	ret             ; On return, we will jump to the pushed address
 
@@ -69,10 +67,9 @@ print_data:
     mov		rax, 1
     mov		rdi, 1
     mov		rsi, r9
-	mov		rdx, text_length
+	mov		rdx, [r8 + text_length]
     syscall
 	ret
-	
 
 ender:
 	call print_woody
@@ -82,6 +79,6 @@ ender:
 	; Define the variables as placeholders
 	; The values will be patched from the C file
 	main_entry_offset_from_stub dq 0x000000000000016d
-	key_length dq 0x0000000000000012
+	; key_length dq 0x0000000000000012
 	text_length dq 0x0000000000000161
 	; text_segment_offset dq 0x000000000000016d
