@@ -16,9 +16,9 @@ print_woody:
 	mov rdx, 14     ; length of the string
 	syscall         ; call the kernel
 
+prepare_decrpytion:
 	mov		r10, [r8 + text_length]	; Assign data_length to r10
     mov		rsi, r9	            ; Assign address of data to rsi
-
     ; Load the address of the key string into rbx
     lea     rbx, [rel key]
 	mov r11, rbx
@@ -52,12 +52,13 @@ continue_loop:
 	call	print_data
 
 clean_return:
-	xor eax, eax    ; Reset registers
+	xor rax, rax    ; Reset registers
 	xor rdi, rdi
 	xor rsi, rsi
 	xor rbx, rbx
 	xor rdx, rdx    ; Segfaults without this
 	xor r8, r8
+	xor r10, r10
 	xor r11, r11
 	push r9         ; Push the main entry address to the stack
 	ret             ; On return, we will jump to the pushed address
