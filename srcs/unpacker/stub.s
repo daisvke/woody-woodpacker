@@ -7,7 +7,7 @@ _start:
 	lea	r8, [rel _start]              			; Get _start address
 	mov	r9, r8                     				; Copy that to r9
 	sub	r9, [r8 + main_entry_offset_from_stub]  ; Put offset of main entry into r9
-	jmp	short ender
+	jmp ender
 
 print_woody:
 	mov eax, 1      ; system call number for sys_write
@@ -15,49 +15,52 @@ print_woody:
 	pop rsi         ; pop the address of the string from the stack
 	mov rdx, 14     ; length of the string
 	syscall         ; call the kernel
-	xor rsi, rsi	; key index
-	xor rcx, rcx	; .text index
 
-    mov		rsi, r9	; Assign address of data to rsi
-    lea 	rbx, [rel key]	; Assign address of key to rbx
+	mov		r10, text_length	; Assign data_length to r10
+    mov		rsi, r9	            ; Assign address of data to rsi
+
+    ; Load the address of the key string into rbx
+    lea     rbx, [rel key]
+	mov r11, rbx
 
 xor_loop:
 	; This code segment is a loop that iterates over the bytes
 	; of the data, performs an XOR operation between the corresponding
 	; bytes of rsi and rbx, and replaces the original byte with the XORed
 	; value into rsi.
-	movzx	rax, byte [rbx]
+	movzx	eax, byte [r11] 
 	xor		al, byte [rsi]
 	mov		byte [rsi], al
 	
-	inc		rbx		; Go to next key char
+	inc		r11		; Go to next key char
 	inc		rsi		; Go to next data char
-	dec		r8
+	dec		r10
 
 	; Check if the end of the key is reached
-	cmp		byte [rbx], 0
+	cmp		byte [r11], 0x0
 	jne		continue_loop
 	; Reset the key pointer to the beginning
-	mov		rbx, rdi
+	mov		r11, rbx
 
 ; The loop continues until all bytes of the data have been processed.
 continue_loop:
 	; Check if the end of the data is reached
-	cmp		r8, 0
+	cmp		r10, 0x0
 	; If not, continue loop
 	jne		xor_loop
 	; If reached, print the result
 	call	print_data
-	; And return from the function after putting back the caller's
-	; original values in the registers
-	leave	; mov rsp, rbp ; pop rbp
-	ret
 
 clean_return:
 	xor eax, eax    ; Reset registers
-	xor edi, edi
+	xor rdi, rdi
 	xor rsi, rsi
+	xor rbx, rbx
 	xor rdx, rdx    ; Segfaults without this
+	xor r8, r8
+	xor r11, r11
+	xor r12, r12
+	xor r13, r13
 	push r9         ; Push the main entry address to the stack
 	ret             ; On return, we will jump to the pushed address
 
@@ -65,27 +68,20 @@ clean_return:
 print_data:
     mov		rax, 1
     mov		rdi, 1
-    mov		rsi, rdx
-	mov		rdx, rcx
+    mov		rsi, r9
+	mov		rdx, text_length
     syscall
 	ret
+	
 
 ender:
 	call print_woody
-	db '....WOODY....', 10 ; newline-terminated string
-	key db "abcdefghijklmnopqr"
+	woody_msg db "....WOODY....", 0xa ; newline-terminated string
+    key db "abcdefghijklmnopqr", 0x0	; Assign address of key to rbx
+
+	; Define the variables as placeholders
+	; The values will be patched from the C file
 	main_entry_offset_from_stub dq 0x000000000000016d
 	key_length dq 0x0000000000000012
 	text_length dq 0x0000000000000161
 	; text_segment_offset dq 0x000000000000016d
-
-; String header that would be printed in stdout during execution
-; of the output file.
-;
-; This header is an indication that the file has
-; been encrypted by this program.
-;
-; Here we have an embed string in the .text (and not .data/.bss).
-; It is stored in the same region of memory as the .text section.
-; In this way we avoid having to use other sections of the original
-; file (that would most likely be encrypted anyway).

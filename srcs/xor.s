@@ -27,7 +27,7 @@ xor_encrypt_decrypt:
     mov		rbp, rsp
 	
     lea		rsi, [rdx]	; Assign address of data to rsi
-    lea 	rbx, [rdi]	; Assign address of key to rbx
+    mov 	rbx, rdi	; Assign key to rbx
 
 	; We need to keep the size of the data as we are using the original value
 	; in print_data, and we are also decrementing it inside the loop to be

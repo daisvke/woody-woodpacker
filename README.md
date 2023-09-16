@@ -171,6 +171,14 @@ Our keygen function generates a random encryption key of a specified width using
 * the functions of the printf family
 * the function authorized within libft (read, write, malloc, free, for example)
 
+## Useful commands
+```
+// Print the loaded file content in hex form at address 0x401040
+gdb ./woody
+run
+x/16xw 0x401040
+```
+
 ## Useful Links
 https://packetstormsecurity.com/files/12327/elf-pv.txt.html<br />
 https://grugq.github.io/docs/phrack-58-05.txt<br />
