@@ -8,13 +8,15 @@ _start:
 	mov	r9, r8                     				; Copy that to r9
 	sub	r9, [r8 + main_entry_offset_from_stub]  ; Put offset of main entry into r9
 	mov r13, [r8 + text_length] ; Put text length in r13
+	mov	r14, r8                     				; Copy that to r9
+	sub r14, [r8 + text_segment_offset_from_stub]
 	jmp ender
 
 print_woody:
-	mov eax, 1      ; system call number for sys_write
-	mov edi, 1      ; file descriptor (stdout)
-	pop rsi         ; pop the address of the string from the stack
-	mov edx, 14     ; length of the string
+	mov eax, 0x1    ; system call number for sys_write
+	mov edi, 0x1    ; file descriptor (stdout)
+	pop rsi			; pop the address of the string from the stack
+	mov edx, 0xe	; length of the string
 	syscall         ; call the kernel
 
 prepare_decrpytion:
@@ -22,8 +24,8 @@ prepare_decrpytion:
     mov		r12, r9		; Assign address of data to r12
 	; Use mprotect to change flags of .text memory region
 	mov		eax, 0xa	; sys_mprotect
-	mov		rdi, r9		; .text address
-	mov		rsi, r13	; .text size
+	mov		rdi, r14	; .text address
+	mov		rsi, 0x1000	; .text segment size
 	mov		edx, 0x7	; PROT_READ|PROT_WRITE|PROT_EXEC
 	syscall
 
@@ -61,15 +63,15 @@ continue_loop:
 clean_return:
 	xor rax, rax    ; Reset registers
 	xor rdi, rdi
-	; xor rsi, rsi
+	xor rsi, rsi
 	xor rbx, rbx
 	xor rdx, rdx    ; Segfaults without this
 	xor r8, r8
 	xor r10, r10
 	xor r11, r11
 	xor r13, r13
-	push r12
-	         ; Push the main entry address to the stack
+	xor r14, r14
+	push r12		; Push the main entry address to the stack
 	ret             ; On return, we will jump to the pushed address
 
 ; Print the processed data
@@ -89,6 +91,5 @@ ender:
 	; Define the variables as placeholders
 	; The values will be patched from the C file
 	main_entry_offset_from_stub dq 0x000000000000016d
-	; key_length dq 0x0000000000000012
+	text_segment_offset_from_stub dq 0x00000000000001ad
 	text_length dq 0x0000000000000161
-	; text_segment_offset dq 0x000000000000016d
