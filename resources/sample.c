@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-int
-main(void) {
-	printf("Hello, World!\n");
-	return (0x0);
+int	main(void) {
+	printf("\nIf you're seeing this message, it probably means "
+	"you've succeeded in your project!\n");
+	return 0;
 }

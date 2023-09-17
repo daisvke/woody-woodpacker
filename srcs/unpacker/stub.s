@@ -28,9 +28,8 @@ xor_loop:
 	; of the data, performs an XOR operation between the corresponding
 	; bytes of rsi and rbx, and replaces the original byte with the XORed
 	; value into rsi.
-	movzx	eax, byte [r11] 
-	xor		al, byte [rsi]
-	mov		byte [rsi], al
+	movzx	eax, byte [r11]
+	xor		byte [rsi], al
 	
 	inc		r11		; Go to next key char
 	inc		rsi		; Go to next data char
