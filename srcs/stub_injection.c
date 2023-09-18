@@ -82,6 +82,7 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char 
 		Elf64_Off	_text_offset = _injection_offset - _program_header->p_offset;
 		Elf64_Off	_text_length = get_text_section_header()->sh_size;
 
+		// Init patch for the stub's data section
 		_patch._main_entry_offset_from_stub = _entry_offset;
 		_patch._text_segment_offset_from_stub = _text_offset;
 		_patch._text_length = _text_length;
@@ -116,7 +117,7 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char 
 			// _ww_memcpy(_patch->_key, "abcdefghijklmnopqr\0", _WW_KEYSTRENGTH + 1);
 			free(_key);
 		}
-		else
+		else // Inject at the end of the .text segment, then shift all the data coming after
 		{
 			if (_modes & _WW_VERBOSE)
 				printf("The executable segment's padding size is smaller than the code"
