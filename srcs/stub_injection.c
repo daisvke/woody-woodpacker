@@ -86,9 +86,9 @@ void _ww_padding_injection(Elf64_Off _injection_offset)
 void _ww_shifting_injection(Elf64_Ehdr *_elf_header, Elf64_Off _injection_offset)
 {
 	if (_modes & _WW_VERBOSE)
-		printf("The executable segment's padding size is smaller than the code"
+		printf("The executable segment's padding size is smaller than the code "
 				"to be injected.\nThe shellcode will be injected anyway and all data"
-				"following the injection point will be shifted.\n" _WW_RESET_COLOR);
+				" following the injection point will be shifted.\n" _WW_RESET_COLOR);
 	_ww_shift_offsets_for_stub_insertion(_elf_header, _injection_offset);
 	_ww_generate_new_file_with_parasite(_injection_offset);
 }
