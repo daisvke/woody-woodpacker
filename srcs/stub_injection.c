@@ -60,12 +60,37 @@ void _ww_generate_new_file_with_parasite(Elf64_Off _injection_offset)
 	_file_size += _stub_size_with_pad;
 }
 
-void _ww_patch_stub(const _ww_t_patch *_patch, Elf64_Off _injection_offset)
+void _ww_patch_stub(char *_key, const _ww_t_patch *_patch, Elf64_Off _injection_offset)
 {
 	// Get the offset of the patch injection location in the stub
-	Elf64_Off	_patch_offset = _injection_offset + (sizeof(_stub) - (sizeof(_ww_t_patch) + _WW_KEYSTRENGTH + 1));
+	Elf64_Off	_patch_offset =
+		_injection_offset + (sizeof(_stub) - (sizeof(_ww_t_patch) + _WW_KEYSTRENGTH + 1));
 	// Patch the stub with the actual computed data
 	_ww_memcpy(_mapped_data + _patch_offset, _patch, sizeof(_ww_t_patch));
+	// Get the offset of the patch injection location in the stub
+	Elf64_Off	_patch_key_offset =
+		_injection_offset + sizeof(_stub) - _WW_KEYSTRENGTH - 1;
+	// Patch the stub with the actual computed data
+	_ww_memcpy(_mapped_data + _patch_key_offset, _key, _WW_KEYSTRENGTH);
+}
+
+void _ww_padding_injection(Elf64_Off _injection_offset)
+{
+	if (_modes & _WW_VERBOSE)
+		printf("The shellcode is injected into the executable "
+				"segment's padding.\n" _WW_RESET_COLOR);
+	_modes |= _WW_INJECTREG_PADDING;
+	_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
+}
+
+void _ww_shifting_injection(Elf64_Ehdr *_elf_header, Elf64_Off _injection_offset)
+{
+	if (_modes & _WW_VERBOSE)
+		printf("The executable segment's padding size is smaller than the code"
+				"to be injected.\nThe shellcode will be injected anyway and all data"
+				"following the injection point will be shifted.\n" _WW_RESET_COLOR);
+	_ww_shift_offsets_for_stub_insertion(_elf_header, _injection_offset);
+	_ww_generate_new_file_with_parasite(_injection_offset);
 }
 
 void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char *_key)
@@ -104,28 +129,10 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char 
 		}
 		// Insert inside executable segment's end padding if there is sufficent space
 		if ((Elf64_Off)sizeof(_stub) <= _padding_size)
-		{
-			if (_modes & _WW_VERBOSE)
-				printf("The shellcode is injected into the executable "
-					   "segment's padding.\n" _WW_RESET_COLOR);
-			_modes |= _WW_INJECTREG_PADDING;
-			_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
-			// Get the offset of the patch injection location in the stub
-			Elf64_Off	_patch_offset = _injection_offset + sizeof(_stub) - _WW_KEYSTRENGTH - 1;
-			// Patch the stub with the actual computed data
-			_ww_memcpy(_mapped_data + _patch_offset, _key, _WW_KEYSTRENGTH);
-			// _ww_memcpy(_patch->_key, "abcdefghijklmnopqr\0", _WW_KEYSTRENGTH + 1);
-			free(_key);
-		}
+			_ww_padding_injection( _injection_offset);
 		else // Inject at the end of the .text segment, then shift all the data coming after
-		{
-			if (_modes & _WW_VERBOSE)
-				printf("The executable segment's padding size is smaller than the code"
-					   "to be injected.\nThe shellcode will be injected anyway and all data"
-					   "following the injection point will be shifted.\n" _WW_RESET_COLOR);
-			_ww_shift_offsets_for_stub_insertion(_elf_header, _injection_offset);
-			_ww_generate_new_file_with_parasite(_injection_offset);
-		}
-		_ww_patch_stub(&_patch, _injection_offset);
+			_ww_shifting_injection(_elf_header, _injection_offset);
+		_ww_patch_stub(_key, &_patch, _injection_offset);
+		free(_key);
 	}
 }
