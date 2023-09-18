@@ -64,14 +64,11 @@ void _ww_patch_stub(const _ww_t_patch *_patch, Elf64_Off _injection_offset)
 {
 	// Get the offset of the patch injection location in the stub
 	Elf64_Off	_patch_offset = _injection_offset + (sizeof(_stub) - (sizeof(_ww_t_patch) + _WW_KEYSTRENGTH + 1));
-
 	// Patch the stub with the actual computed data
-
 	_ww_memcpy(_mapped_data + _patch_offset, _patch, sizeof(_ww_t_patch));
-	printf(">>>>>>>>>>>>> %ld\n", sizeof(_ww_t_patch));
 }
 
-void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
+void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char *_key)
 {
 	// Inject the stub only if the segment is executable and loadable.
 	if (_program_header->p_type == PT_LOAD && (_program_header->p_flags & PF_X))
@@ -115,8 +112,9 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header)
 			// Get the offset of the patch injection location in the stub
 			Elf64_Off	_patch_offset = _injection_offset + sizeof(_stub) - _WW_KEYSTRENGTH - 1;
 			// Patch the stub with the actual computed data
-			_ww_memcpy(_mapped_data + _patch_offset, "abcdefghijklmnopqr", _WW_KEYSTRENGTH);
+			_ww_memcpy(_mapped_data + _patch_offset, _key, _WW_KEYSTRENGTH);
 			// _ww_memcpy(_patch->_key, "abcdefghijklmnopqr\0", _WW_KEYSTRENGTH + 1);
+			free(_key);
 		}
 		else
 		{

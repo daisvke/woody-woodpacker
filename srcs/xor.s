@@ -63,7 +63,7 @@ continue_loop:
 	; If not, continue loop
 	jne		xor_loop
 	; If reached, print the result
-	call	print_data
+	; call	print_data
 	; And return from the function after putting back the caller's
 	; original values in the registers
 	leave	; mov rsp, rbp ; pop rbp

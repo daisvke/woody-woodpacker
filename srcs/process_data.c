@@ -4,16 +4,13 @@ static void _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
 {
 	Elf64_Phdr *_program_header = (Elf64_Phdr *)(_mapped_data + _elf_header->e_phoff);
 
-	printf("\n");
 	for (size_t i = 0; i < _elf_header->e_phnum; i++)
 	{
 		// Check if the segment is for the "text" section
-		printf("> SEGMENT %ld -> type: %d\n", i, _program_header[i].p_type);
-		printf("-----------------------------------------------\n");
 		if (_program_header[i].p_type == PT_LOAD && // If phdr is loadable
 			(_program_header[i].p_flags & PF_X))	// If phdr is executable
 		{
-			_ww_inject_stub(_elf_header, &_program_header[i]);
+			_ww_inject_stub(_elf_header, &_program_header[i], _key);
 			return;
 		}
 	}
@@ -49,22 +46,16 @@ void _ww_process_mapped_data()
 {
 	Elf64_Ehdr *_elf_header = (Elf64_Ehdr *)_mapped_data;
 
-	printf("Starting .text section encryption...\n");
+	printf(_WW_YELLOW_COLOR "Starting .text section encryption...\n");
 	Elf64_Shdr *txt_shdr = get_text_section_header();
 	if (!txt_shdr)
 		_ww_print_error_and_exit(_WW_ERR_NOTEXTSEC);
 
-	// char*	_key = _ww_keygen(_WW_KEYCHARSET, _WW_KEYSTRENGTH);
-	char *_key = "abcdefghijklmnopqr\0";
-	printf("Generated key: %s\n", _key);
-
-	printf(".text section size: %ld\n", txt_shdr->sh_size);
+	char*	_key = _ww_keygen(_WW_KEYCHARSET, _WW_KEYSTRENGTH);
+	printf("Generated random key: %s\n", _key);
 
 	xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + txt_shdr->sh_offset, txt_shdr->sh_size);
-	// xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + txt_shdr->sh_offset, txt_shdr->sh_size);
 
-	printf("\nStarting parasite injection...\n");
+	printf("\nStarting parasite injection...\n" _WW_RESET_COLOR);
 	_ww_process_segments(_elf_header, _key);
-
-	// free(_key);
 }

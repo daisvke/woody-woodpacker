@@ -18,9 +18,10 @@ void _ww_map_file_into_memory(const char *filename)
         _ww_print_error_and_exit(_WW_ERR_OPENBIN);
 
     // Determine the file size by moving the cursor till the end
-    _file_size = lseek(_fd, 0, SEEK_END);
-    if (_file_size < 0)
+    int res = lseek(_fd, 0, SEEK_END);
+    if (res < 0)
         _ww_print_error_and_exit(_WW_ERR_LSEEK);
+    else _file_size = res;
     // Put back the cursor at the beginning of the file
     if (lseek(_fd, 0, SEEK_SET < 0))
         _ww_print_error_and_exit(_WW_ERR_LSEEK);

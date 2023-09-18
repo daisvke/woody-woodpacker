@@ -60,7 +60,7 @@ _continue_loop:
 	; If not, continue loop
 	jne		_xor_loop
 	; If reached, print the result
-	call	_print_data
+	; call	_print_data
 
 ; Reset registers
 _clean_return:
@@ -99,4 +99,4 @@ _get_data:
 	_main_entry_offset_from_stub		dq 0x0000000000000000
 	_text_segment_offset_from_stub		dq 0x0000000000000000
 	_text_length						dq 0x0000000000000000
-    _key 								db '012345678910111213', 0x0
+    _key 								db '01234567891011121314151617181920', 0x0
