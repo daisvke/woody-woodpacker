@@ -43,8 +43,7 @@ xor_loop:
 	; bytes of rsi and rbx, and replaces the original byte with the XORed
 	; value into rsi.
 	mov		al, byte [rbx]
-	xor		al, byte [rsi]
-	mov		byte [rsi], al
+	xor		byte [rsi], al
 	
 	inc		rbx		; Go to next key char
 	inc		rsi		; Go to next data char

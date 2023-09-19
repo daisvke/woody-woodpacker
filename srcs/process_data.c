@@ -1,15 +1,16 @@
 #include "ww.h"
 
-static void _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
+static void	_ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
 {
 	Elf64_Phdr *_program_header = (Elf64_Phdr *)(_mapped_data + _elf_header->e_phoff);
 
 	for (size_t i = 0; i < _elf_header->e_phnum; i++)
 	{
-		// Check if the segment is for the "text" section
+		// Check if the segment contains the .text section
 		if (_program_header[i].p_type == PT_LOAD && // If phdr is loadable
 			(_program_header[i].p_flags & PF_X))	// If phdr is executable
 		{
+			// If .text, then proceed to injection, otherwise return
 			_ww_inject_stub(_elf_header, &_program_header[i], _key);
 			return;
 		}
