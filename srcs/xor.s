@@ -42,7 +42,7 @@ xor_loop:
 	; of the data, performs an XOR operation between the corresponding
 	; bytes of rsi and rbx, and replaces the original byte with the XORed
 	; value into rsi.
-	movzx	eax, byte [rbx]
+	mov		al, byte [rbx]
 	xor		al, byte [rsi]
 	mov		byte [rsi], al
 	

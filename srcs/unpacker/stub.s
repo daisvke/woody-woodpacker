@@ -21,31 +21,32 @@ _print_woody:
 	mov		edx, 0xe	; length of the string
 	syscall         	; call the kernel
 
-_prepare_decrpytion:
-	mov		r10, r13	; Assign data_length to r10
-    mov		r12, r9		; Assign address of data to r12
+_modify_data_flags:
 	; Use mprotect to change flags of .text memory region
 	; so that we can write the decrpyted data back into r9
 	mov		eax, 0xa	; sys_mprotect
-	mov		rdi, r14	; .text address
+	mov		rdi, r14	; .text segment address
 	mov		rsi, 0x1000	; .text segment size
 	mov		edx, 0x7	; PROT_READ|PROT_WRITE|PROT_EXEC
 	syscall
 
-    lea     rbx, [rel _key]	; Load the address of the key string into rbx
+_prepare_decrpytion:
+	mov		r10, r13		; Assign data_length to r10
+    mov		r12, r9			; Assign address of data to r12
+	lea     rbx, [rel _key]	; Assign address of the key string to rbx
 	mov		r11, rbx		; Copy that into r11
 
 _xor_loop:
 	; This code segment is a loop that iterates over the bytes
 	; of the data, performs an XOR operation between the corresponding
 	; bytes of r9 and r11, and replaces the original byte with the XORed
-	; value into r9.
-	movzx	eax, byte [r11]
-	xor		byte [r9], al
+	; value back into r9 (the original data location).
+	mov		al, byte [r11]	; Copy the current byte into al
+	xor		byte [r9], al	; xor that with the current key byte
 	
 	inc		r11		; Go to next key char
 	inc		r9		; Go to next data char
-	dec		r10
+	dec		r10		; Decrement decrypting data size
 
 	; Check if the end of the key is reached
 	cmp		byte [r11], 0x0
@@ -55,14 +56,12 @@ _xor_loop:
 
 ; The loop continues until all bytes of the data have been processed.
 _continue_loop:
-	; Check if the end of the data is reached
-	cmp		r10, 0x0
-	; If not, continue loop
-	jne		_xor_loop
-	; If reached, print the result
+	cmp		r10, 0x0	; Check if the end of the data is reached
+	jne		_xor_loop	; If not, continue loop
+	; If reached, print the result (only for testing)
 	; call	_print_data
 
-; Reset registers
+; Reset all used registers, just in case
 _clean_return:
 	xor		rax, rax
 	xor		rdi, rdi
@@ -78,7 +77,7 @@ _clean_return:
 	xor		r12, r12
 	ret         	    ; On return, we will jump to the pushed address
 
-; Print the processed data
+; Print the processed data (only for testing)
 _print_data:
     mov		rax, 1
     mov		rdi, 1
@@ -87,16 +86,15 @@ _print_data:
     syscall
 	ret
 
-_woody:
-	; call _get_data
-	; _woody_msg	db "....WOODY....", 0xa 	 ; newline-terminated string
 _get_data:
 	call _print_woody
 
-	db "....WOODY....", 0xa 	 ; newline-terminated string
+	db "....WOODY....", 0xa	; newline-terminated string
 	; Define the variables as placeholders
-	; The values will be patched from the C file
+	; The values will be patched from stub_injection.c
 	_main_entry_offset_from_stub		dq 0x0000000000000000
 	_text_segment_offset_from_stub		dq 0x0000000000000000
 	_text_length						dq 0x0000000000000000
-    _key 								db '01234567891011121314151617181920', 0x0
+	; Here we put a random string that will be replaced with the actual key.
+	; This is to reserve the space on the stub file for the key to come.
+    _key 								db "01234567891011121314151617181920", 0x0
