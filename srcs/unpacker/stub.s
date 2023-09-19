@@ -5,7 +5,6 @@ global _start
 
 _start:
 	lea	r8, [rel _start]              				; Get _start address
-
 	mov	r9, r8                     					; Copy that to r9
 	sub	r9, [r8 + _main_entry_offset_from_stub] 	; Compute main entry address into r9
 

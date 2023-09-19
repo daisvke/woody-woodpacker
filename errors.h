@@ -1,5 +1,5 @@
-#ifndef ERRORS_H
-# define ERRORS_H
+#ifndef _WW_ERRORS_H
+# define _WW_ERRORS_H
 
 # include <errno.h>
 

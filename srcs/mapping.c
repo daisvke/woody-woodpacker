@@ -5,7 +5,8 @@ static int _ww_is_elf64(unsigned char *_mapped_data)
     Elf64_Ehdr _elf_header;
     _ww_memcpy(&_elf_header, _mapped_data, sizeof(Elf64_Ehdr));
 
-    // We get to EI_CLASS by moving forward for 4 bytes (= 1st field's size of e_ident)
+    // We get to EI_CLASS by moving forward for 4 bytes
+    // (= 1st field's size of e_ident)
     if (_elf_header.e_ident[EI_CLASS] != ELFCLASS64)
         return -1;
     return 0;

@@ -7,12 +7,17 @@ void _ww_shift_offsets_for_stub_insertion(
 	Elf64_Ehdr *_elf_header, Elf64_Off _injection_offset)
 {
 	size_t _stub_size_with_pad = ((sizeof(_stub) / _WW_PAGE_SIZE) + 1) * _WW_PAGE_SIZE;
+
+	// First, shift the program headers
 	Elf64_Phdr *_program_header = (Elf64_Phdr *)(_mapped_data + _elf_header->e_phoff);
 	// Increase phdr's offset by PAGE_SIZEF for each phdr after the insertion
 	for (size_t j = 0; j < _elf_header->e_phnum; j++)
 		if ((Elf64_Off)_program_header[j].p_offset > _injection_offset)
 			_program_header[j].p_offset += _stub_size_with_pad;
 
+	// Then, shift the section headers
+	// No need to shift from the section header if there is no section header
+	if (_elf_header->e_shnum == 0) return;
 	Elf64_Shdr *_section_header = (Elf64_Shdr *)(_mapped_data + _elf_header->e_shoff);
 	Elf64_Shdr *_last_text_shdr = NULL;
 	// Increase size of the last shdr in the .text segment by the stub length
@@ -20,11 +25,10 @@ void _ww_shift_offsets_for_stub_insertion(
 		_last_text_shdr = &_section_header[j];
 	if (_last_text_shdr)
 		_last_text_shdr->sh_size += sizeof(_stub);
-	// Increase shdr's offset by PAGE_SIZEF for each shdr after the insertion
+	// Increase shdr's offset by PAGE_SIZE for each shdr after the insertion
 	for (size_t j = 0; j < _elf_header->e_shnum; j++)
 		if ((Elf64_Off)_section_header[j].sh_offset > _injection_offset)
 			_section_header[j].sh_offset += _stub_size_with_pad;
-	// TODO only if section header exists
 	_elf_header->e_shoff += _stub_size_with_pad;
 }
 
@@ -63,12 +67,12 @@ void _ww_generate_new_file_with_parasite(Elf64_Off _injection_offset)
 void _ww_patch_stub(char *_key, const _ww_t_patch *_patch, Elf64_Off _injection_offset)
 {
 	// Get the offset of the patch injection location in the stub
-	Elf64_Off	_patch_offset =
+	Elf64_Off _patch_offset =
 		_injection_offset + (sizeof(_stub) - (sizeof(_ww_t_patch) + _WW_KEYSTRENGTH + 1));
 	// Patch the stub with the actual computed data
 	_ww_memcpy(_mapped_data + _patch_offset, _patch, sizeof(_ww_t_patch));
 	// Get the offset of the patch injection location in the stub
-	Elf64_Off	_patch_key_offset =
+	Elf64_Off _patch_key_offset =
 		_injection_offset + sizeof(_stub) - _WW_KEYSTRENGTH - 1;
 	// Patch the stub with the actual computed data
 	_ww_memcpy(_mapped_data + _patch_key_offset, _key, _WW_KEYSTRENGTH);
@@ -78,7 +82,7 @@ void _ww_padding_injection(Elf64_Off _injection_offset)
 {
 	if (_modes & _WW_VERBOSE)
 		printf("The shellcode is injected into the executable "
-				"segment's padding.\n" _WW_RESET_COLOR);
+			   "segment's padding.\n" _WW_RESET_COLOR);
 	_modes |= _WW_INJECTREG_PADDING;
 	_ww_memcpy(_mapped_data + _injection_offset, _stub, sizeof(_stub));
 }
@@ -87,8 +91,8 @@ void _ww_shifting_injection(Elf64_Ehdr *_elf_header, Elf64_Off _injection_offset
 {
 	if (_modes & _WW_VERBOSE)
 		printf("The executable segment's padding size is smaller than the code "
-				"to be injected.\nThe shellcode will be injected anyway and all data"
-				" following the injection point will be shifted.\n" _WW_RESET_COLOR);
+			   "to be injected.\nThe shellcode will be injected anyway and all data"
+			   " following the injection point will be shifted.\n" _WW_RESET_COLOR);
 	_ww_shift_offsets_for_stub_insertion(_elf_header, _injection_offset);
 	_ww_generate_new_file_with_parasite(_injection_offset);
 }
@@ -98,16 +102,16 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char 
 	// Inject the stub only if the segment is executable and loadable.
 	if (_program_header->p_type == PT_LOAD && (_program_header->p_flags & PF_X))
 	{
-		_ww_t_patch	_patch;
 		Elf64_Off	_injection_offset = _program_header->p_offset + _program_header->p_filesz;
 		Elf64_Addr	_injection_addr = _program_header->p_vaddr + _program_header->p_filesz;
 		Elf64_Off	_padding_size = _program_header[1].p_offset - _injection_offset;
 		Elf64_Off	_entry_offset =
 			_program_header->p_vaddr + _program_header->p_filesz - _elf_header->e_entry;
 		Elf64_Off	_text_offset = _injection_offset - _program_header->p_offset;
-		Elf64_Off	_text_length = get_text_section_header()->sh_size;
+		Elf64_Off	_text_length = _ww_get_text_section_header()->sh_size;
 
 		// Init patch for the stub's data section
+		_ww_t_patch	_patch;
 		_patch._main_entry_offset_from_stub = _entry_offset;
 		_patch._text_segment_offset_from_stub = _text_offset;
 		_patch._text_length = _text_length;
@@ -129,7 +133,7 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char 
 		}
 		// Insert inside executable segment's end padding if there is sufficent space
 		if ((Elf64_Off)sizeof(_stub) <= _padding_size)
-			_ww_padding_injection( _injection_offset);
+			_ww_padding_injection(_injection_offset);
 		else // Inject at the end of the .text segment, then shift all the data coming after
 			_ww_shifting_injection(_elf_header, _injection_offset);
 		_ww_patch_stub(_key, &_patch, _injection_offset);

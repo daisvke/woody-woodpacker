@@ -21,7 +21,7 @@ Elf64_Shdr *get_section_header(void *_f, int _idx)
 	return _f + (((Elf64_Ehdr *)_f)->e_shoff + (_idx * ((Elf64_Ehdr *)_f)->e_shentsize));
 }
 
-Elf64_Shdr *get_text_section_header()
+Elf64_Shdr *_ww_get_text_section_header()
 {
 	Elf64_Ehdr *_ehdr = (Elf64_Ehdr *)_mapped_data;
 
@@ -47,11 +47,11 @@ void _ww_process_mapped_data()
 	Elf64_Ehdr *_elf_header = (Elf64_Ehdr *)_mapped_data;
 
 	printf(_WW_YELLOW_COLOR "Starting .text section encryption...\n");
-	Elf64_Shdr *txt_shdr = get_text_section_header();
+	Elf64_Shdr *txt_shdr = _ww_get_text_section_header();
 	if (!txt_shdr)
 		_ww_print_error_and_exit(_WW_ERR_NOTEXTSEC);
 
-	char*	_key = _ww_keygen(_WW_KEYCHARSET, _WW_KEYSTRENGTH);
+	char *_key = _ww_keygen(_WW_KEYCHARSET, _WW_KEYSTRENGTH);
 	printf("Generated random key: %s\n", _key);
 
 	xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + txt_shdr->sh_offset, txt_shdr->sh_size);
