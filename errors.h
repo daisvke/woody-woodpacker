@@ -2,6 +2,7 @@
 # define _WW_ERRORS_H
 
 # include <errno.h>
+# include <stdbool.h>
 
 # define _WW_ERROR_MSG_ARRAY \
 { \
