@@ -173,7 +173,9 @@ Our keygen function generates a random encryption key of a specified width using
 
 ## Useful commands
 ```
-readelf
+readelf [filename]
+hexdump -C [filename]
+vimdiff [filename 1] [filename 2]
 
 // Print the loaded file content in hex form at address 0x401040
 gdb ./woody

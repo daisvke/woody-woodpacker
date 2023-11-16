@@ -35,10 +35,13 @@
 
 enum _ww_e_modes
 {
-	// Display detailed notifications
-	_WW_VERBOSE = 1,
-	// Insert stub inside executable segment's padding
-	_WW_INJECTREG_PADDING = 2
+    // Display detailed notifications
+    _WW_VERBOSE = 1,
+    // Insert stub inside executable segment's padding
+    _WW_INJECTREG_PADDING = 2,
+    // Insert at the end of the .text segment
+    // then shift all the data coming after
+    _WW_INJECTREG_SHIFT = 3
 };
 
 typedef struct _ww_s_patch
