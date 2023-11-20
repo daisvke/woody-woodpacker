@@ -1,8 +1,8 @@
 #include "ww.h"
 
-unsigned char *_mapped_data;
-Elf64_Off _file_size;
-uint16_t _modes;
+unsigned char   *_mapped_data;
+Elf64_Off       _file_size;
+uint16_t        _modes;
 
 int main(int argc, char *argv[])
 {

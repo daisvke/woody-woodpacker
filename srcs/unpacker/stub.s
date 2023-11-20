@@ -4,15 +4,21 @@ section .text
 global _start
 
 _start:
-	lea	r8, [rel _start]              				; Get _start address
-	mov	r9, r8                     					; Copy that to r9
-	sub	r9, [r8 + _main_entry_offset_from_stub] 	; Compute main entry address into r9
+	lea		r8, [rel _start]              				; Get _start address
+	mov		r9, r8                     					; Copy that to r9
+	sub		r9, [r8 + _main_entry_offset_from_stub] 	; Compute main entry address into r9
+	jmp		_get_data
 
-	mov	r13, [r8 + _text_length]					; Put .text section length in r13
-	mov	r14, r8                     				; Copy _start address into r14
-	sub	r14, [r8 + _text_segment_offset_from_stub]	; Compute segment address into r14
+_modify_data_flags:
+	; Use mprotect to change flags of .text memory region
+	; so that we can write the decrpyted data back into r9
+	mov		eax, 0xa									; sys_mprotect
+	mov		rdi, r8
+	sub		rdi, [r8 + _text_segment_offset_from_stub]	; Compute section address
+	mov		rsi, [r8 + _text_segment_offset_from_stub]	; segment size
+	mov		edx, 0x7									; PROT_READ|PROT_WRITE|PROT_EXEC
+	syscall
 
-	jmp	_get_data
 _print_woody:
 	mov		eax, 0x1    ; system call number for sys_write
 	mov		edi, 0x1    ; file descriptor (stdout)
@@ -20,16 +26,12 @@ _print_woody:
 	mov		edx, 0xe	; length of the string
 	syscall         	; call the kernel
 
-_modify_data_flags:
-	; Use mprotect to change flags of .text memory region
-	; so that we can write the decrpyted data back into r9
-	mov		eax, 0xa	; sys_mprotect
-	mov		rdi, r14	; .text segment address
-	mov		rsi, 0x1000	; .text segment size
-	mov		edx, 0x7	; PROT_READ|PROT_WRITE|PROT_EXEC
-	syscall
 
 _prepare_decrpytion:
+	mov		r13, [r8 + _text_length]					; Put .text section length in r13
+	mov		r14, r8                     				; Copy _start address into r14
+	sub		r14, [r8 + _text_section_offset_from_stub]	; Compute section address into r14
+
 	mov		r10, r13		; Assign data_length to r10
     mov		r12, r9			; Assign address of data to r12
 	lea     rbx, [rel _key]	; Assign address of the key string to rbx
@@ -68,6 +70,7 @@ _clean_return:
 	xor		rbx, rbx
 	xor		rdx, rdx    ; Segfaults without this
 	xor		r8, r8
+	xor		r9, r9
 	xor		r10, r10
 	xor		r11, r11
 	xor		r13, r13
@@ -86,13 +89,15 @@ _print_data:
 	ret
 
 _get_data:
-	call _print_woody
+	call _modify_data_flags
 
 	db "....WOODY....", 0xa	; newline-terminated string
+
 	; Define the variables as placeholders
 	; The values will be patched from stub_injection.c
 	_main_entry_offset_from_stub		dq 0x0000000000000000
 	_text_segment_offset_from_stub		dq 0x0000000000000000
+	_text_section_offset_from_stub		dq 0x0000000000000000
 	_text_length						dq 0x0000000000000000
 	; Here we put a random string that will be replaced with the actual key.
 	; This is to reserve the space on the stub file for the key to come.

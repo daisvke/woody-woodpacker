@@ -1,21 +1,38 @@
 #include "ww.h"
 
-static void _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
+// static void _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
+// {
+// 	Elf64_Phdr *_program_header = (Elf64_Phdr *)(_mapped_data + _elf_header->e_phoff);
+// 	size_t _last = 0;
+
+// 	// We look for the last executable segment
+// 	for (size_t i = 0; i < _elf_header->e_phnum; ++i)
+// 	{
+// 		// Check if the segment contains the .text section
+// 		if (_program_header[i].p_type == PT_LOAD && // If phdr is loadable
+// 			(_program_header[i].p_flags & PF_X))	// If phdr is executable
+// 			_last = i;
+// 	}
+// 	// If .text, then proceed to injection, otherwise return
+// 	if (_last)
+// 		_ww_inject_stub(_elf_header, &_program_header[_last], _key);
+// }
+
+static void     _ww_process_segments(Elf64_Ehdr *_elf_header, char *_key)
 {
 	Elf64_Phdr *_program_header = (Elf64_Phdr *)(_mapped_data + _elf_header->e_phoff);
-	size_t _last = 0;
 
-	// We look for the last executable segment
-	for (size_t i = 0; i < _elf_header->e_phnum; ++i)
+	for (size_t i = 0; i < _elf_header->e_phnum; i++)
 	{
 		// Check if the segment contains the .text section
 		if (_program_header[i].p_type == PT_LOAD && // If phdr is loadable
-			(_program_header[i].p_flags & PF_X))	// If phdr is executable
-			_last = i;
+			(_program_header[i].p_flags & PF_X))    // If phdr is executable
+		{
+			// If .text, then proceed to injection, otherwise return
+			_ww_inject_stub(_elf_header, &_program_header[i], _key);
+			return;
+		}
 	}
-	// If .text, then proceed to injection, otherwise return
-	if (_last)
-		_ww_inject_stub(_elf_header, &_program_header[_last], _key);
 }
 
 Elf64_Shdr *get_section_header(void *_f, int _idx)
@@ -60,7 +77,12 @@ void _ww_process_mapped_data()
 	char *_key = _ww_keygen(_WW_KEYCHARSET, _WW_KEYSTRENGTH);
 	printf("Generated random key: %s\n", _key);
 
-	xor_encrypt_decrypt(_key, _WW_KEYSTRENGTH, _mapped_data + txt_shdr->sh_offset, txt_shdr->sh_size);
+	xor_encrypt_decrypt(
+		_key,
+		_WW_KEYSTRENGTH,
+		_mapped_data + txt_shdr->sh_offset,
+		txt_shdr->sh_size
+	);
 
 	printf("\nStarting parasite injection...\n" _WW_RESET_COLOR);
 	_ww_process_segments(_elf_header, _key);
