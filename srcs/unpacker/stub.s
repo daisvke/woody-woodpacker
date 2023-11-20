@@ -14,7 +14,7 @@ _modify_data_flags:
 	; so that we can write the decrpyted data back into r9
 	mov		eax, 0xa									; sys_mprotect
 	mov		rdi, r8
-	sub		rdi, [r8 + _text_segment_offset_from_stub]	; Compute section address
+	sub		rdi, [r8 + _text_segment_offset_from_stub]	; Compute segment address
 	mov		rsi, [r8 + _text_segment_offset_from_stub]	; segment size
 	mov		edx, 0x7									; PROT_READ|PROT_WRITE|PROT_EXEC
 	syscall
@@ -33,7 +33,7 @@ _prepare_decrpytion:
 	sub		r14, [r8 + _text_section_offset_from_stub]	; Compute section address into r14
 
 	mov		r10, r13		; Assign data_length to r10
-    mov		r12, r9			; Assign address of data to r12
+    mov		r12, r9			; Keep address of data in r12 for jumping to it while exiting
 	lea     rbx, [rel _key]	; Assign address of the key string to rbx
 	mov		r11, rbx		; Copy that into r11
 
@@ -45,9 +45,9 @@ _xor_loop:
 	mov		al, byte [r11]	; Copy the current byte into al
 	xor		byte [r9], al	; xor that with the current key byte
 	
-	inc		r11		; Go to next key char
-	inc		r9		; Go to next data char
-	dec		r10		; Decrement decrypting data size
+	inc		r11				; Go to next key char
+	inc		r9				; Go to next data char
+	dec		r10				; Decrement decrypting data size
 
 	; Check if the end of the key is reached
 	cmp		byte [r11], 0x0
@@ -57,8 +57,8 @@ _xor_loop:
 
 ; The loop continues until all bytes of the data have been processed.
 _continue_loop:
-	cmp		r10, 0x0	; Check if the end of the data is reached
-	jne		_xor_loop	; If not, continue loop
+	cmp		r10, 0x0		; Check if the end of the data is reached
+	jne		_xor_loop		; If not, continue loop
 	; If reached, print the result (only for testing)
 	; call	_print_data
 
@@ -83,7 +83,7 @@ _clean_return:
 _print_data:
     mov		rax, 1
     mov		rdi, 1
-    mov		rsi, r12
+    mov		rsi, r9
 	mov		rdx, r13
     syscall
 	ret
