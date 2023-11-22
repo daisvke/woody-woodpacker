@@ -11,55 +11,41 @@ void _ww_shift_offsets_for_stub_insertion(
 	// First, shift the program headers
 	Elf64_Phdr *_program_header = (Elf64_Phdr *)(_mapped_data + _elf_header->e_phoff);
 	// Increase phdr's offset by PAGE_SIZEF for each phdr after the insertion
-	for (size_t j = 0; j < _elf_header->e_phnum; j++)
-		if ((Elf64_Off)_program_header[j].p_offset > _injection_offset)
-			_program_header[j].p_offset += _stub_size_with_pad;
+	for (size_t i = 0; i < _elf_header->e_phnum; i++)
+		if (_program_header[i].p_offset > _injection_offset)
+			_program_header[i].p_offset += _stub_size_with_pad;
 
 	// Then, shift the section headers
 	// No need to shift from the section header if there is no section header
 	if (_elf_header->e_shnum == 0)
 		return;
 	Elf64_Shdr *_section_header = (Elf64_Shdr *)(_mapped_data + _elf_header->e_shoff);
-	Elf64_Shdr *_last_text_shdr = NULL;
-	// Increase size of the last shdr in the .text segment by the stub length
-	for (size_t j = 0; _section_header[j].sh_offset < _program_header[1].p_offset; ++j)
-		_last_text_shdr = &_section_header[j];
-	if (_last_text_shdr)
-		_last_text_shdr->sh_size += sizeof(_stub);
 	// Increase shdr's offset by PAGE_SIZE for each shdr after the insertion
-	for (size_t j = 0; j < _elf_header->e_shnum; j++)
-		if ((Elf64_Off)_section_header[j].sh_offset > _injection_offset)
-			_section_header[j].sh_offset += _stub_size_with_pad;
-	_elf_header->e_shoff += _stub_size_with_pad;
+	for (size_t i = 0; i < _elf_header->e_shnum; i++)
+		if (_section_header[i].sh_offset > _injection_offset)
+			_section_header[i].sh_offset += _stub_size_with_pad;
+	if (_elf_header->e_shoff > _injection_offset)
+		_elf_header->e_shoff += _stub_size_with_pad;
 }
 
 void _ww_generate_new_file_with_parasite(Elf64_Off _injection_offset)
 {
 	size_t _stub_size_with_pad = ((sizeof(_stub) / _WW_PAGE_SIZE) + 1) * _WW_PAGE_SIZE;
-	// Add padding to the stub by the page size of the memory
-	unsigned char *_stub_with_pad = malloc(_stub_size_with_pad);
-	if (!_stub_with_pad)
-		_ww_print_error_and_exit(_WW_ERR_ALLOCMEM);
-	_ww_memset(_stub_with_pad, 0, _stub_size_with_pad);
-	_ww_memcpy(_stub_with_pad, _stub, sizeof(_stub));
-
-	// Create a new file with the mapped data + stub with padding
+	// Create a new file that can receive the mapped data + stub with padding
 	void *_file_with_stub = malloc(_file_size + _stub_size_with_pad);
-	if (!_file_with_stub)
-		_ww_print_error_and_exit(_WW_ERR_ALLOCMEM);
+	if (!_file_with_stub) _ww_print_error_and_exit(_WW_ERR_ALLOCMEM);
 	// Copy from the mapped data until the injection point of the stub
 	_ww_memcpy(_file_with_stub, _mapped_data, _injection_offset);
+	_ww_memset(_file_with_stub + _injection_offset, 0, _stub_size_with_pad);
 	// Copy from the end of the stub(with padding) to the end of the mapped data
 	_ww_memcpy(
 		_file_with_stub + _injection_offset + _stub_size_with_pad,
 		_mapped_data + _injection_offset,
 		_file_size - _injection_offset);
 	// Copy the stub with the padding
-	_ww_memcpy(_file_with_stub + _injection_offset, _stub_with_pad, _stub_size_with_pad);
-	free(_stub_with_pad);
+	_ww_memcpy(_file_with_stub + _injection_offset, _stub, sizeof(_stub));
 	// Unmap the file from memory
-	if (munmap(_mapped_data, _file_size) < 0)
-		_ww_print_error_and_exit(_WW_ERR_MUNMAP);
+	if (munmap(_mapped_data, _file_size) < 0) _ww_print_error_and_exit(_WW_ERR_MUNMAP);
 	// Link the new file to the global variable
 	_mapped_data = _file_with_stub;
 	_file_size += _stub_size_with_pad;
@@ -141,9 +127,9 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char 
 		printf(".text section size: %lx\n\n", _text_length);
 	}
 	// // Insert inside executable segment's end padding if there is sufficient space
-	if ((Elf64_Off)sizeof(_stub) <= (Elf64_Off)_padding_size)
-		_ww_padding_injection(_injection_offset);
-	else // Inject at the end of the .text segment, then shift all the data coming after
+	// if ((Elf64_Off)sizeof(_stub) <= (Elf64_Off)_padding_size)
+	// 	_ww_padding_injection(_injection_offset);
+	// else // Inject at the end of the .text segment, then shift all the data coming after
 		_ww_shifting_injection(_elf_header, _injection_offset);
 	_ww_patch_stub(_key, &_patch, _injection_offset);
 	free(_key);
