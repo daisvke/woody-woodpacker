@@ -12,11 +12,13 @@
 	"malloc: Failed to allocate memory", \
 	"mmap: Failed to map the file", \
 	"munmap: Failed to unmap the file", \
-	"File architecture not suported. x86_64 only", \
+	"File architecture not suported. 64-bit ELF files only", \
 	"lseek: Failed to read file", \
 	"write: Failed to write to the file", \
 	"open: Failed to open/create output file", \
-	"No .text section found! Aborting..." \
+	"No .text section found! Aborting...", \
+	"Corrupted program header", \
+	"Corrupted ELF header" \
 }
 
 enum	_ww_e_errors
@@ -31,7 +33,9 @@ enum	_ww_e_errors
 	_WW_ERR_LSEEK,
 	_WW_ERR_WRITEFILE,
 	_WW_ERR_OUTFILE,
-	_WW_ERR_NOTEXTSEC
+	_WW_ERR_NOTEXTSEC,
+	_WW_ERR_CORRUPTPHDR,
+	_WW_ERR_CORRUPTEHDR,
 };
 
 void	_ww_print_error_and_exit(enum _ww_e_errors err_code);

@@ -92,16 +92,22 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char 
 	_padding_size = _padding_size > 0 ? _padding_size : 0;
 	Elf64_Off _entry_offset =
 		_program_header->p_vaddr + _program_header->p_filesz - _elf_header->e_entry;
-
+	printf("filesize: %ld |_program_header->p_vaddr: %lx | _program_header->p_filesz: %ld"
+		"_program_header->p_offset: %ld\n",  
+		_file_size, _program_header->p_vaddr, _program_header->p_filesz, _program_header->p_offset);
 	Elf64_Shdr *_shdr = _ww_get_text_section_header();
 	Elf64_Off _segment_offset = _injection_offset - _program_header->p_offset;
 	Elf64_Off _text_offset = _injection_offset - _shdr->sh_offset;
 	Elf64_Off _text_length = _shdr->sh_size;
 
-	printf("phhhhhhhh : %lx   /  %lx / %lx/  %lx\n",
-	_program_header[1].p_offset, _program_header->p_offset, _program_header->p_filesz,
+	printf("phhhhhhhh : %lx   /  %lx / %lx/  %lx / %lx\n",
+	_program_header[1].p_offset, _program_header->p_offset, _program_header->p_filesz, _program_header->p_memsz,
 	_shdr->sh_offset
 	);
+	if (_elf_header->e_entry > _program_header->p_vaddr + _program_header->p_memsz) {
+		free(_key);
+		_ww_print_error_and_exit(_WW_ERR_CORRUPTPHDR);
+	}
 	// Init patch for the stub's data section
 	_ww_t_patch _patch;
 	_patch._main_entry_offset_from_stub = _entry_offset;
@@ -127,9 +133,9 @@ void _ww_inject_stub(Elf64_Ehdr *_elf_header, Elf64_Phdr *_program_header, char 
 		printf(".text section size: %lx\n\n", _text_length);
 	}
 	// // Insert inside executable segment's end padding if there is sufficient space
-	// if ((Elf64_Off)sizeof(_stub) <= (Elf64_Off)_padding_size)
-	// 	_ww_padding_injection(_injection_offset);
-	// else // Inject at the end of the .text segment, then shift all the data coming after
+	if ((Elf64_Off)sizeof(_stub) <= (Elf64_Off)_padding_size)
+		_ww_padding_injection(_injection_offset);
+	else // Inject at the end of the .text segment, then shift all the data coming after
 		_ww_shifting_injection(_elf_header, _injection_offset);
 	_ww_patch_stub(_key, &_patch, _injection_offset);
 	free(_key);
