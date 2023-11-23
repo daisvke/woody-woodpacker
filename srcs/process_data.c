@@ -54,7 +54,7 @@ static void	_ww_check_elf_header_integrity_and_exit_on_error(Elf64_Ehdr *_elf_he
 		((_elf_header->e_shoff +
 			(_elf_header->e_shnum * _elf_header->e_shentsize)) > _file_size)
 	)
-		_ww_print_error_and_exit(_WW_ERR_CORRUPTEHDR);
+	_ww_print_error_and_exit(_WW_ERR_CORRUPTEHDR);
 }
 
 /* Encrypt .text section before injection
