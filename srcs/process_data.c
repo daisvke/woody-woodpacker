@@ -62,16 +62,16 @@ static void	_ww_check_elf_header_integrity_and_exit_on_error(Elf64_Ehdr *_elf_he
  */
 void	_ww_process_mapped_data()
 {
-	Elf64_Ehdr *_elf_header = (Elf64_Ehdr *)_mapped_data;
+	Elf64_Ehdr	*_elf_header = (Elf64_Ehdr *)_mapped_data;
 	_ww_check_elf_header_integrity_and_exit_on_error(_elf_header);
-	Elf64_Shdr *txt_shdr = _ww_get_text_section_header();
+	Elf64_Shdr	*txt_shdr = _ww_get_text_section_header();
 	if (!txt_shdr) _ww_print_error_and_exit(_WW_ERR_NOTEXTSEC);
 
-	printf(_WW_YELLOW_COLOR
-		   "Starting encryption of the .text section...\n");
+	printf("\n" _WW_YELLOW_BG " > STARTING ENCRYPTION OF THE .TEXT SECTION... < "
+		_WW_RESET_BG_COLOR "\n");
 	// Generate the key that will be used for the encryption
 	char *_key = _ww_keygen(_WW_KEYCHARSET, _WW_KEYSTRENGTH);
-	printf("Generated random key: %s\n", _key);
+	printf("Generated random key => " _WW_YELLOW_COLOR "%s\n", _key);
 
 	/* Encrypt the .text section before inserting the parasite code.
 	 * The section will be decrypted by the latter during execution.
@@ -82,7 +82,9 @@ void	_ww_process_mapped_data()
 		_mapped_data + txt_shdr->sh_offset,
 		txt_shdr->sh_size
 	);
+	printf(_WW_GREEN_COLOR "Done!\n\n" _WW_RESET_COLOR);
 
-	printf("\nStarting parasite injection...\n" _WW_RESET_COLOR);
+	printf(_WW_YELLOW_BG " > STARTING PARASITE INJECTION... < "
+		_WW_RESET_BG_COLOR "\n");
 	_ww_process_segments(_elf_header, _key);
 }
