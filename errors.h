@@ -1,10 +1,10 @@
-#ifndef _WW_ERRORS_H
-# define _WW_ERRORS_H
+#ifndef WW_ERRORS_H
+# define WW_ERRORS_H
 
 # include <errno.h>
 # include <stdbool.h>
 
-# define _WW_ERROR_MSG_ARRAY \
+# define WW_ERROR_MSG_ARRAY \
 { \
 	"Wrong number of arguments", \
 	"Unknown argument(s)", \
@@ -21,23 +21,23 @@
 	"Corrupted ELF header" \
 }
 
-enum	_ww_e_errors
+enum	ww_e_errors
 {
-	_WW_ERR_BADARGNBR,
-	_WW_ERR_BADARG,
-	_WW_ERR_OPENBIN,
-	_WW_ERR_ALLOCMEM,		
-	_WW_ERR_MMAP,
-	_WW_ERR_MUNMAP,
-	_WW_ERR_NOT64BITELF,
-	_WW_ERR_LSEEK,
-	_WW_ERR_WRITEFILE,
-	_WW_ERR_OUTFILE,
-	_WW_ERR_NOTEXTSEC,
-	_WW_ERR_CORRUPTPHDR,
-	_WW_ERR_CORRUPTEHDR,
+	WW_ERR_BADARGNBR,
+	WW_ERR_BADARG,
+	WW_ERR_OPENBIN,
+	WW_ERR_ALLOCMEM,		
+	WW_ERR_MMAP,
+	WW_ERR_MUNMAP,
+	WW_ERR_NOT64BITELF,
+	WW_ERR_LSEEK,
+	WW_ERR_WRITEFILE,
+	WW_ERR_OUTFILE,
+	WW_ERR_NOTEXTSEC,
+	WW_ERR_CORRUPTPHDR,
+	WW_ERR_CORRUPTEHDR,
 };
 
-void	_ww_print_error_and_exit(enum _ww_e_errors err_code);
+void	ww_print_error_and_exit(enum ww_e_errors err_code);
 
 #endif

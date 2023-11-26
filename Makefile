@@ -64,7 +64,7 @@ $(NAME) : $(OBJS) $(ASM_OBJS)
 
 $(STUB_OBJS_DIR)%.o: $(STUB_SRCS_DIR)%.s
 	mkdir -p $(OBJS_DIR)
-	echo "unsigned char _stub[] = {" > $(STUB_HDR)
+	echo "unsigned char g_stub[] = {" > $(STUB_HDR)
 	nasm -f bin -g $< -o $@
 
 all: generate_hex_stub $(NAME)

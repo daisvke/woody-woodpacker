@@ -1,29 +1,29 @@
 #include "ww.h"
 
-static bool _ww_in_error_and_exit = false;
+static bool ww_in_error_and_exit = false;
 
-void _ww_print_error_and_exit(enum _ww_e_errors err_code)
+void ww_print_error_and_exit(enum ww_e_errors err_code)
 {
-    const char *_err_msg_array[] = _WW_ERROR_MSG_ARRAY;
+    const char *err_msg_array[] = WW_ERROR_MSG_ARRAY;
 
-    if (_ww_in_error_and_exit) {
-        fprintf(stderr, "Error: Recursive call to _ww_print_error_and_exit.\n");
+    if (ww_in_error_and_exit) {
+        fprintf(stderr, "Error: Recursive call to ww_print_error_and_exit.\n");
         exit(1);
     }
 
-    _ww_in_error_and_exit = true;
+    ww_in_error_and_exit = true;
 
     fprintf(
         stderr,
-        _WW_RED_COLOR "Error: %s.\n" _WW_RESET_COLOR,
-        _err_msg_array[err_code]
+        WW_RED_COLOR "Error: %s.\n" WW_RESET_COLOR,
+        err_msg_array[err_code]
     );
 
-    if (_mapped_data)
-        if (munmap(_mapped_data, _file_size) < 0)
+    if (g_mapped_data)
+        if (munmap(g_mapped_data, g_file_size) < 0)
             fprintf(stderr, "Error: Unable to unmap memory.\n");
 
-    _ww_in_error_and_exit = false;
+    ww_in_error_and_exit = false;
 
     exit(1);
 }

@@ -1,6 +1,6 @@
 #include "ww.h"
 
-void    *_ww_memcpy(void *dest, const void *src, size_t n)
+void    *ww_memcpy(void *dest, const void *src, size_t n)
 {
 	char      	*d;
 	const char	*s;
@@ -13,7 +13,7 @@ void    *_ww_memcpy(void *dest, const void *src, size_t n)
 	return (dest);
 }
 
-size_t	_ww_strlen(const char *s)
+size_t	ww_strlen(const char *s)
 {
 	size_t  i;
 
@@ -22,7 +22,7 @@ size_t	_ww_strlen(const char *s)
 	return (i);
 }
 
-void    *_ww_memset(void *src, int c, size_t n)
+void    *ww_memset(void *src, int c, size_t n)
 {
 		size_t  i;
 		char    *str;
@@ -33,7 +33,7 @@ void    *_ww_memset(void *src, int c, size_t n)
 		return (src);
 }
 
-int	_ww_strncmp(const char *s1, const char *s2, size_t n)
+int	ww_strncmp(const char *s1, const char *s2, size_t n)
 {
 	while ((*s1 || *s2) && n--)
 	{
