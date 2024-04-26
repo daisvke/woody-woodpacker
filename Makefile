@@ -14,7 +14,7 @@ ASFLAGS	= -f elf64 -g
 # **************************************************************************** #
 #       FLAGS                                                                  #
 # **************************************************************************** #
-CFLAGS	= -Wall -Wextra -g -Werror 
+CFLAGS	= -Wall -Wextra -g #-Werror 
 
 # **************************************************************************** #
 #       SOURCES                                                                #
@@ -52,11 +52,15 @@ STUB_OBJS		= $(addprefix $(STUB_OBJS_DIR), $(STUB_SRCS_FILES:.s=.o))
 # **************************************************************************** #
 #       RULES                                                                  #
 # **************************************************************************** #
+
+all: generate_hex_stub $(NAME)
+
 $(ASM_OBJS_DIR)%.o : $(ASM_SRCS_DIR)%.s
 	mkdir -p $(ASM_OBJS_DIR)
 	$(ASM) $< -o $@
 
 $(OBJS_DIR)%.o : $(SRCS_DIR)%.c $(INCS)
+	mkdir -p $(OBJS_DIR)
 	$(CC) -I. -c $(CFLAGS) $< -o $@
 
 $(NAME) : $(OBJS) $(ASM_OBJS)
@@ -67,15 +71,13 @@ $(STUB_OBJS_DIR)%.o: $(STUB_SRCS_DIR)%.s
 	echo "unsigned char g_stub[] = {" > $(STUB_HDR)
 	nasm -f bin -g $< -o $@
 
-all: generate_hex_stub $(NAME)
-
 generate_hex_stub : $(STUB_OBJS)
 	xxd -i < $(STUB_OBJS) >> $(STUB_HDR)
 	echo "};" >> $(STUB_HDR)
 
 # Run the compilation + packer + packed file
 run: re
-	echo && valgrind ./woody_woodpacker resources/64bit-sample && ./woody
+	valgrind ./woody_woodpacker resources/64bit-sample && ./woody
 
 debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
