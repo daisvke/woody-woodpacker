@@ -155,14 +155,13 @@ The unpacker, on the other hand, is the actual code responsible for unpacking or
     3. Reserved Sections: If the ELF file contains reserved or unused sections, we can repurpose one of these sections to hold the stub code. In that case we have to make sure that the selected section does not interfere with the original functionality of the ELF file or any dependencies.
 
 ### Keygen
-
 Our keygen function generates a random encryption key of a specified width using a given character set. It seeds the random number generator with the current time, and selects random characters from the character set to build the key.
 
 ### Data encryption
 * XOR-based Encryption
+* In addition to XOR encryption, we've enhanced our encryption algorithm by incorporating an additive cipher. The additive cipher, also known as a Caesar cipher, shifts each character of the plaintext by a fixed amount (the key) before performing the XOR operation. This additional step adds another layer of complexity to the encryption process.
 
 ## Allowed functions
-
 * open, close, exit
 * fpusts, fflush, lseek
 * mmap, munmap, mprotect

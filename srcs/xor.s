@@ -1,7 +1,7 @@
 bits 64
 
 ;----------------------------------------------------------------
-; void	xor_encrypt_decrypt(
+; void	xor_with_additive_cipher(
 ;	void *key, size_t key_length, void *data, size_t data_length)
 ;		<rdi>			<rsi>		<rdx>			<rcx>
 ;----------------------------------------------------------------
@@ -12,6 +12,15 @@ bits 64
 ;   0 1 1
 ;   0 1 0
 ;=> 0 0 1
+;
+; We added an additive cipher:
+; - encyption:
+; 	1. <byte> + <additive cipher value>
+;	2. XOR <data-byte> <key-byte>
+;
+; - decryption:
+;	1. XOR <data-byte> <key-byte>
+; 	2. <byte> - <additive cipher value>
 
 ;---------------------------------- Macros
 SYS_WRITE	equ 1
@@ -19,9 +28,9 @@ STDOUT		equ 1
 ;----------------------------------
 
 section .text
-    global	xor_encrypt_decrypt
+    global	xor_with_additive_cipher
 
-xor_encrypt_decrypt:
+xor_with_additive_cipher:
 	; Prologue: save caller's stack pointers
     push	rbp
     mov		rbp, rsp
@@ -39,15 +48,19 @@ xor_encrypt_decrypt:
 
 xor_loop:
 	; This code segment is a loop that iterates over the bytes
-	; of the data, performs an XOR operation between the corresponding
-	; bytes of rsi and rbx, and replaces the original byte with the XORed
-	; value into rsi.
-	mov		al, byte [rbx]
-	xor		byte [rsi], al
+	; of the data, adds the value 42 to the current byte of the data
+	; (this is to complexify the encryption algorithm, and the value will be
+	; substracted during decryption),
+	; then performs an XOR operation between the corresponding
+	; bytes of rsi and rbx.
+	mov		al, byte [rbx]	; Assign the current byte from the data to al
+	mov		cl, 42			; Load the value 42 into the low 8 bits of rbx
+	add		byte [rsi], cl	; Add 42 to the byte
+	xor		byte [rsi], al	; XOR the data-byte with the key-byte
 	
 	inc		rbx		; Go to next key char
 	inc		rsi		; Go to next data char
-	dec		r8
+	dec		r8		; decrease the data_length counter
 
 	; Check if the end of the key is reached
 	cmp		byte [rbx], 0

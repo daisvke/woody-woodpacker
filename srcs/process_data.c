@@ -76,7 +76,7 @@ void	ww_process_mapped_data()
 	/* Encrypt the .text section before inserting the parasite code.
 	 * The section will be decrypted by the latter during execution.
 	 */
-	xor_encrypt_decrypt(
+	xor_with_additive_cipher(
 		key,
 		WW_KEYSTRENGTH,
 		g_mapped_data + txt_shdr->sh_offset,

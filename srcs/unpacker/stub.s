@@ -53,7 +53,10 @@ xor_loop:
 	; bytes of r9 and r11, and replaces the original byte with the XORed
 	; value back into r9 (the original data location).
 	mov		al, byte [r11]	; Copy the current byte into al
+	mov		cl, 42			; Load the value 42 into the low 8 bits of rcx
 	xor		byte [r9], al	; xor that with the current key byte
+	sub		byte [r9], cl
+
 	
 	inc		r11				; Go to next key char
 	inc		r9				; Go to next data char
@@ -75,6 +78,7 @@ continue_loop:
 ; Reset all used registers, just in case
 clean_return:
 	xor		rax, rax
+	xor		rcx, rcx
 	xor		rdi, rdi
 	xor		rsi, rsi
 	xor		rbx, rbx
@@ -86,7 +90,6 @@ clean_return:
 	xor		r13, r13
 	xor		r14, r14
 	push	r12			; Push the main entry address to the stack
-	xor		r12, r12
 	ret         	    ; On return, we will jump to the pushed address
 
 ; Print the processed data (only for testing)
