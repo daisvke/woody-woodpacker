@@ -7,29 +7,27 @@ OUTFILE	= woody
 # **************************************************************************** #
 #       COMMANDS                                                               #
 # **************************************************************************** #
-CC		= cc
-ASM		= nasm $(ASFLAGS)
-ASFLAGS	= -f elf64 -g
+CC				= cc
+ASM				= nasm
+AS_OBJS_FLAGS	= -f elf64 -g
+AS_FLAGS		= -f bin -g
 
 # **************************************************************************** #
 #       FLAGS                                                                  #
 # **************************************************************************** #
-CFLAGS	= -Wall -Wextra -g #-Werror 
+CFLAGS	= -Wall -Wextra -g #-Werror
 
 # **************************************************************************** #
 #       SOURCES                                                                #
 # **************************************************************************** #
 SRCS_DIR		= srcs/
 SRCS_FILES		= $(notdir $(wildcard $(SRCS_DIR)*.c))
-SRCS			= $(addprefix $(SRCS_DIR), $(SRCS_FILES)%.c)
 
 ASM_SRCS_DIR	= srcs/
 ASM_SRCS_FILES	= $(notdir $(wildcard $(ASM_SRCS_DIR)*.s))
-ASM_SRCS		= $(addprefix $(ASM_SRCS_DIR), $(ASM_SRCS_FILES)%.s)
 
 STUB_SRCS_DIR	= $(SRCS_DIR)unpacker/
 STUB_SRCS_FILES	= stub.s
-STUB_SRCS		= $(addprefix $(STUB_SRCS_DIR), $(STUB_SRCS_FILES)%.s)
 
 # **************************************************************************** #
 #       INCLUDES                                                               #
@@ -53,11 +51,13 @@ STUB_OBJS		= $(addprefix $(STUB_OBJS_DIR), $(STUB_SRCS_FILES:.s=.o))
 #       RULES                                                                  #
 # **************************************************************************** #
 
+.PHONY: all generate_hex_stub run debug clean fclean re debug
+
 all: generate_hex_stub $(NAME)
 
 $(ASM_OBJS_DIR)%.o : $(ASM_SRCS_DIR)%.s
 	mkdir -p $(ASM_OBJS_DIR)
-	$(ASM) $< -o $@
+	$(ASM) $(AS_OBJS_FLAGS) $< -o $@
 
 $(OBJS_DIR)%.o : $(SRCS_DIR)%.c $(INCS)
 	mkdir -p $(OBJS_DIR)
@@ -69,7 +69,7 @@ $(NAME) : $(OBJS) $(ASM_OBJS)
 $(STUB_OBJS_DIR)%.o: $(STUB_SRCS_DIR)%.s
 	mkdir -p $(OBJS_DIR)
 	echo "unsigned char g_stub[] = {" > $(STUB_HDR)
-	nasm -f bin -g $< -o $@
+	$(ASM) $(ASFLAGS) $< -o $@
 
 generate_hex_stub : $(STUB_OBJS)
 	xxd -i < $(STUB_OBJS) >> $(STUB_HDR)
@@ -89,8 +89,3 @@ fclean: clean
 	rm -f $(NAME) $(OUTFILE) $(STUB_HDR)
 
 re: fclean all
-
-# **************************************************************************** #
-#       PHONY                                                                  #
-# **************************************************************************** #
-.PHONY: all clean fclean re debug
