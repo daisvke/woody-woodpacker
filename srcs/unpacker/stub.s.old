@@ -19,10 +19,24 @@ modify_data_flags:
 	mov		edx, 0x7									; PROT_READ|PROT_WRITE|PROT_EXEC
 	syscall
 
-delete_file:
-	pop		rdi			; Pop the address of the string from the stack
-    mov     eax, 0x57	; System call number for unlink
-    syscall
+ft_strlen:
+	pop		rdi					; Pop the address of the string from the stack
+	mov		rsi, rdi			; Save the string (used by print_woody)
+	xor		rax, rax			; Init rax to 0 by XORing bits
+	jmp		count_loop			; Jump to loop subroutine
+
+count_loop:
+	cmp		byte [rdi + rax], 0	; Compare the current string position to 0
+	jz		print_woody			; If = 0, end of string => jump to return
+	inc		rax					; Increment rax by one
+	jmp		count_loop			; Continue loop
+
+print_woody:
+	mov		edx, eax	; Put the result from ft_strlen in edx (used by sys_write)
+	mov		eax, 0x1    ; System call number for sys_write
+	mov		edi, 0x1    ; File descriptor (stdout)
+	syscall         	; Call the kernel
+
 
 prepare_decrpytion:
 	mov		r14, r8                     				; Copy _start address into r14
@@ -90,8 +104,7 @@ print_data:
 get_data:
 	call modify_data_flags
 
-	db "t.txt", 0x0		; Null-terminated filename of a file to delete
-	; db "d", 0x0		; Null-terminated filename of a folder to delete
+	db "....WOODY....", 0x0		; Null-terminated string to print
 
 	; Define the variables as placeholders
 	; The values will be patched from stub_injection.c
@@ -102,3 +115,5 @@ get_data:
 	; Here we put a random string that will be replaced with the actual key.
 	; This is to reserve the space on the stub file for the key to come.
     key 							db "01234567891011121314151617181920", 0x0
+
+	
