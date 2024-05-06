@@ -1,10 +1,10 @@
 bits 64
 
-;----------------------------------------------------------------
+;--------------------------------------------------------------------------
 ; void	xor_with_additive_cipher(
-;	void *key, size_t key_length, void *data, size_t data_length)
-;		<rdi>			<rsi>		<rdx>			<rcx>
-;----------------------------------------------------------------
+;	void *key, size_t key_length, void *data, size_t data_length, int mode)
+;		<rdi>			<rsi>		<rdx>			<rcx>           <r8>
+;--------------------------------------------------------------------------
 ; In cryptography, the simple XOR cipher is a type of additive
 ; cipher, an encryption algorithm that operates, in binary,
 ; according to the principles:
@@ -14,17 +14,17 @@ bits 64
 ;=> 0 0 1
 ;
 ; We added an additive cipher:
-; - encyption:
+; - encyption (mode 0):
 ; 	1. <byte> + <additive cipher value>
 ;	2. XOR <data-byte> <key-byte>
 ;
-; - decryption:
+; - decryption (mode 1):
 ;	1. XOR <data-byte> <key-byte>
 ; 	2. <byte> - <additive cipher value>
 
 ;---------------------------------- Macros
-SYS_WRITE	equ 1
-STDOUT		equ 1
+SYS_WRITE	equ 0x1
+STDOUT		equ 0x1
 ;----------------------------------
 
 section .text
@@ -44,7 +44,7 @@ xor_with_additive_cipher:
 	; Doing cmp byte [rsi], 0 to check the end of the string instead of
 	; using a counter would terminate the process earlier if a null character
 	; is part of the data
-	mov		r8, rcx	; Assign data_length to r10
+	mov		r10, rcx	; Assign data_length to r10
 
 xor_loop:
 	; This code segment is a loop that iterates over the bytes
@@ -54,16 +54,26 @@ xor_loop:
 	; then performs an XOR operation between the corresponding
 	; bytes of rsi and rbx.
 	mov		al, byte [rbx]	; Assign the current byte from the data to al
-	mov		cl, 42			; Load the value 42 into the low 8 bits of rbx
-	add		byte [rsi], cl	; Add 42 to the byte
+	mov		cl, 0x2a		; Load the value 42 into the low 8 bits of rbx
+	cmp		r8, 0x0
+	je      add_byte
+
+sub_byte:
 	xor		byte [rsi], al	; XOR the data-byte with the key-byte
-	
-	inc		rbx		; Go to next key char
-	inc		rsi		; Go to next data char
-	dec		r8		; decrease the data_length counter
+    sub     byte [rsi], cl	; Subtract 42 from the byte
+    jmp		xor_byte		; Jump to xor_byte
+
+add_byte:
+    add     byte [rsi], cl	; Add 42 to the byte
+	xor		byte [rsi], al	; XOR the data-byte with the key-byte
+
+xor_byte:
+	inc		rbx				; Go to next key char
+	inc		rsi				; Go to next data char
+	dec		r10				; decrease the data_length counter
 
 	; Check if the end of the key is reached
-	cmp		byte [rbx], 0
+	cmp		byte [rbx], 0x0
 	jne		continue_loop
 	; Reset the key pointer to the beginning
 	mov		rbx, rdi
@@ -71,7 +81,7 @@ xor_loop:
 ; The loop continues until all bytes of the data have been processed.
 continue_loop:
 	; Check if the end of the data is reached
-	cmp		r8, 0
+	cmp		r10, 0x0
 	; If not, continue loop
 	jne		xor_loop
 	; If reached, print the result

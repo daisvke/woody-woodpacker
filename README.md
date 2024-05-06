@@ -170,6 +170,9 @@ Our keygen function generates a random encryption key of a specified width using
 * the functions of the printf family
 * the function authorized within libft (read, write, malloc, free, for example)
 
+## Todo
+- Protect xor.s args
+
 ## Useful commands
 ```
 readelf [filename]
@@ -180,6 +183,9 @@ vimdiff [filename 1] [filename 2]
 gdb ./woody
 run
 x/16xw 0x401040
+
+// Add breakpoint at relative address 11ad if base address is 0x4011ad
+b *0x4011ad
 ```
 
 ## Useful Links

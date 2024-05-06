@@ -71,7 +71,7 @@ void        ww_write_processed_data_to_file(void);
 void        ww_inject_stub( \
     Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key);
 void        xor_with_additive_cipher( \
-    void *key, size_t key_length, void *data, size_t data_length);
+    void *key, size_t key_length, void *data, size_t data_length, int mode);
 char        *ww_keygen(const char *_charset, size_t strength);
 
 #endif

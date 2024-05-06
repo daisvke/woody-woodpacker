@@ -80,7 +80,8 @@ void	ww_process_mapped_data()
 		key,
 		WW_KEYSTRENGTH,
 		g_mapped_data + txt_shdr->sh_offset,
-		txt_shdr->sh_size
+		txt_shdr->sh_size,
+		0 // Encrypt mode
 	);
 	printf(WW_GREEN_COLOR "Done!\n\n" WW_RESET_COLOR);
 

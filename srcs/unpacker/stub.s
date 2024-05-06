@@ -39,7 +39,7 @@ xor_loop:
 	; bytes of r9 and r11, and replaces the original byte with the XORed
 	; value back into r9 (the original data location).
 	mov		al, byte [r11]	; Copy the current byte into al
-	mov		cl, 42			; Load the value 42 into the low 8 bits of rcx
+	mov		cl, 0x2a		; Load the value 42 into the low 8 bits of rcx
 	xor		byte [r9], al	; xor that with the current key byte
 	sub		byte [r9], cl
 
@@ -80,8 +80,8 @@ clean_return:
 
 ; Print the processed data (only for testing)
 print_data:
-    mov		rax, 1
-    mov		rdi, 1
+    mov		rax, 0x1
+    mov		rdi, 0x1
     mov		rsi, r9
 	mov		rdx, r13
     syscall
