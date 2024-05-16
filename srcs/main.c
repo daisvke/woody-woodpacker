@@ -6,13 +6,15 @@ uint16_t        g_modes;
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
-        ww_print_error_and_exit(WW_ERR_BADARGNBR);
+	(void)argc;
 
-    if (ww_parse_argv(argv) == WW_ERROR)
-        ww_print_error_and_exit(WW_ERR_BADARG);
+    ww_parse_argv(argv);
 
-    ww_map_file_into_memory(argv[1]);
+	char *filename = ww_get_filename(argv);
+	if (!filename)
+		ww_print_error_and_exit(WW_ERR_BADARGNBR);
+
+    ww_map_file_into_memory(filename);
     ww_process_mapped_data();
     ww_write_processed_data_to_file();
 }

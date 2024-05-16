@@ -36,12 +36,16 @@
 enum ww_eg_modes
 {
     // Display detailed notifications
-    WW_VERBOSE = 1,
+    WW_VERBOSE = (1 << 1),
     // Insert stub inside executable segment's padding
-    WW_INJECTREG_PADDING = 2,
+    WW_INJECTREG_PADDING = (1 << 2),
     // Insert at the end of the .text segment
     // then shift all the data coming after
-    WW_INJECTREG_SHIFT = 3
+    WW_INJECTREG_SHIFT = (1 << 3),
+    // Choose the default shellcode
+    WW_SHELLCODE_DEFAULT = (1 << 4),
+    // Choose a virus shellcode
+    WW_SHELLCODE_VIRUS = (1 << 5),
 };
 
 typedef struct ww_s_patch
@@ -63,7 +67,8 @@ size_t      ww_strlen(const char *s);
 void        *ww_memset(void *src, int c, size_t n);
 void        *ww_memcpy(void *dest, const void *src, size_t n);
 int         ww_strncmp(const char *s1, const char *s2, size_t n);
-int         ww_parse_argv(char *argv[]);
+void        ww_parse_argv(char *argv[]);
+char        *ww_get_filename(char *argv[]);
 Elf64_Shdr  *ww_get_text_section_header(void);
 void        ww_map_file_into_memory(const char *filename);
 void        ww_process_mapped_data(void);
