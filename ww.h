@@ -21,6 +21,8 @@
 #define WW_GREEN_BG        "\033[42m"
 #define WW_YELLOW_BG       "\033[43m"
 #define WW_RESET_BG_COLOR  "\033[49m"
+/* Underline text */
+#define WW_UNDER_WHT       "\e[4;37m"
 
 #define WW_PACKED_FILENAME "woody"
 #define WW_ERROR           1
@@ -35,6 +37,8 @@
                             "0123456789"
 enum ww_eg_modes
 {
+	// Display the help message
+	WW_HELP = (1 << 0),
     // Display detailed notifications
     WW_VERBOSE = (1 << 1),
     // Insert stub inside executable segment's padding
@@ -61,6 +65,7 @@ typedef struct ww_s_patch
 extern unsigned char    *g_mapped_data;  // file is mapped in memory here
 extern Elf64_Off        g_file_size;     // size of the mapped file
 extern uint16_t         g_modes;         // options given from command line
+extern char            *g_progname;      // The name of the program is referenced there
 /*-------------------------------------------------------*/
 
 size_t      ww_strlen(const char *s);
@@ -69,6 +74,7 @@ void        *ww_memcpy(void *dest, const void *src, size_t n);
 int         ww_strncmp(const char *s1, const char *s2, size_t n);
 void        ww_parse_argv(char *argv[]);
 char        *ww_get_filename(char *argv[]);
+void        ww_help(FILE *fd);
 Elf64_Shdr  *ww_get_text_section_header(void);
 void        ww_map_file_into_memory(const char *filename);
 void        ww_process_mapped_data(void);

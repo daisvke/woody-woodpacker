@@ -34,7 +34,9 @@ void ww_parse_argv(char *argv[])
 {
 	for (int i = 1; argv[i] != NULL; i++) {
 
-		if (ww_check_opt(argv[i], "--verbose") || ww_check_opt(argv[i], "-v"))
+		if (ww_check_opt(argv[i], "--help") || ww_check_opt(argv[i], "-h"))
+			g_modes |= WW_HELP;
+		else if (ww_check_opt(argv[i], "--verbose") || ww_check_opt(argv[i], "-v"))
 			g_modes |= WW_VERBOSE;
 		else if (ww_check_opt(argv[i], "--injection-type=padding") || ww_check_opt(argv[i], "-i=p"))
 			g_modes |= WW_INJECTREG_PADDING;
@@ -46,7 +48,34 @@ void ww_parse_argv(char *argv[])
 			g_modes |= WW_SHELLCODE_VIRUS;
 		else if (argv[i][0] == '-') {
 			fprintf(stderr, WW_RED_COLOR "option: %s\n" WW_RESET_COLOR, argv[i]);
-			ww_print_error_and_exit(WW_ERR_UNRECOGNIZEDOPT);
+			ww_print_error_and_exit(WW_ERR_INVALIDOPT);
 		}
 	}
+}
+
+void ww_help(FILE *fd)
+{
+	fprintf(fd, "Usage: %s: [option(s)] " WW_UNDER_WHT "binary\n" WW_RESET_COLOR, g_progname);
+	fprintf(fd, "Pack the " WW_UNDER_WHT "binary" WW_RESET_COLOR ".\n" );
+	fprintf(fd, "The options are: \n");
+	fprintf(fd, "-i=p, --injection-type=padding\t\t"
+		"Inject the parasite inside the executable segment's end padding\n");
+	fprintf(fd, "-i=s, --injection-type=shift\t\t"
+		"Inject the parasite at the end of the .text segment\n");
+	fprintf(fd, "-s=d, --shellcode-type=default\t\t"
+		"The injected parasite is benign\n");
+	fprintf(fd, "-s=v, --shellcode-type=virus\t\t"
+		"The injected parasite is a virus\n");
+	fprintf(fd, "-v,   --verbose\t\t\t\t"
+	"Verbose mode. Causes the program to print debugging messages\n");
+	fprintf(fd, "-h,   --help\t\t\t\t"
+		"Display this information\n");
+
+	if (g_mapped_data)
+		if (munmap(g_mapped_data, g_file_size) < 0)
+			fprintf(stderr, "Error: Unable to unmap memory.\n");
+
+	if (fd == stderr)
+		exit(1);
+	exit(0);
 }

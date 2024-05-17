@@ -19,6 +19,9 @@ void ww_print_error_and_exit(enum ww_e_errors err_code)
         err_msg_array[err_code]
     );
 
+	if (err_code == WW_ERR_INVALIDOPT || err_code == WW_ERR_BADARGNBR)
+		ww_help(stderr);
+
     if (g_mapped_data)
         if (munmap(g_mapped_data, g_file_size) < 0)
             fprintf(stderr, "Error: Unable to unmap memory.\n");

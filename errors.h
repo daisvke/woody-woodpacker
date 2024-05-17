@@ -19,7 +19,7 @@
 	"No .text section found! Aborting...", \
 	"Corrupted program header", \
 	"Corrupted ELF header", \
-	"Unrecognized option", \
+	"Invalid option", \
 }
 
 enum	ww_e_errors
@@ -37,7 +37,7 @@ enum	ww_e_errors
 	WW_ERR_NOTEXTSEC,
 	WW_ERR_CORRUPTPHDR,
 	WW_ERR_CORRUPTEHDR,
-	WW_ERR_UNRECOGNIZEDOPT,
+	WW_ERR_INVALIDOPT,
 };
 
 void	ww_print_error_and_exit(enum ww_e_errors err_code);
