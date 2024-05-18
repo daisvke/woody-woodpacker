@@ -30,6 +30,22 @@ static bool ww_check_opt(char *arg, char *opt)
 	return false;
 }
 
+static void ww_check_injection_type_opt(enum ww_eg_modes opt)
+{
+	if (g_modes & opt) {
+		fprintf(stderr, "You must choose one injection type.\n");
+		ww_print_error_and_exit(WW_ERR_BADARGNBR);
+	}
+}
+
+static void ww_check_shellcode_type_opt(enum ww_eg_modes opt)
+{
+	if (g_modes & opt) {
+		fprintf(stderr, "You must choose one shellcode type.\n");
+		ww_print_error_and_exit(WW_ERR_BADARGNBR);
+	}
+}
+
 void ww_parse_argv(char *argv[])
 {
 	for (int i = 1; argv[i] != NULL; i++) {
@@ -38,14 +54,22 @@ void ww_parse_argv(char *argv[])
 			g_modes |= WW_HELP;
 		else if (ww_check_opt(argv[i], "--verbose") || ww_check_opt(argv[i], "-v"))
 			g_modes |= WW_VERBOSE;
-		else if (ww_check_opt(argv[i], "--injection-type=padding") || ww_check_opt(argv[i], "-i=p"))
+		else if (ww_check_opt(argv[i], "--injection-type=padding") || ww_check_opt(argv[i], "-i=p")) {
+			ww_check_injection_type_opt(WW_INJECTREG_SHIFT);
 			g_modes |= WW_INJECTREG_PADDING;
-		else if (ww_check_opt(argv[i], "--injection-type=shift") || ww_check_opt(argv[i], "-i=s"))
+		}
+		else if (ww_check_opt(argv[i], "--injection-type=shift") || ww_check_opt(argv[i], "-i=s")) {
+			ww_check_injection_type_opt(WW_INJECTREG_PADDING);
 			g_modes |= WW_INJECTREG_SHIFT;
-		else if (ww_check_opt(argv[i], "--shellcode-type=default") || ww_check_opt(argv[i], "-s=d"))
+		}
+		else if (ww_check_opt(argv[i], "--shellcode-type=default") || ww_check_opt(argv[i], "-s=d")) {
+			ww_check_shellcode_type_opt(WW_SHELLCODE_VIRUS);
 			g_modes |= WW_SHELLCODE_DEFAULT;
-		else if (ww_check_opt(argv[i], "--shellcode-type=virus") || ww_check_opt(argv[i], "-s=v"))
+		}
+		else if (ww_check_opt(argv[i], "--shellcode-type=virus") || ww_check_opt(argv[i], "-s=v")) {
+			ww_check_shellcode_type_opt(WW_SHELLCODE_DEFAULT);
 			g_modes |= WW_SHELLCODE_VIRUS;
+		}
 		else if (argv[i][0] == '-') {
 			fprintf(stderr, WW_RED_COLOR "option: %s\n" WW_RESET_COLOR, argv[i]);
 			ww_print_error_and_exit(WW_ERR_INVALIDOPT);
