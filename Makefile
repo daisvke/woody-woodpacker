@@ -68,10 +68,10 @@ $(NAME) : $(OBJS) $(ASM_OBJS)
 
 $(STUB_OBJS_DIR)%.o: $(STUB_SRCS_DIR)%.s
 	mkdir -p $(OBJS_DIR)
-	echo "unsigned char g_stub[] = {" > $(STUB_HDR)
 	$(ASM) $(ASFLAGS) $< -o $@
 
 generate_hex_stub : $(STUB_OBJS)
+	echo "unsigned char g_stub[] = {" > $(STUB_HDR)
 	xxd -i < $(STUB_OBJS) >> $(STUB_HDR)
 	echo "};" >> $(STUB_HDR)
 
