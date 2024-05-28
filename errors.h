@@ -12,7 +12,7 @@
 	"malloc: Failed to allocate memory", \
 	"mmap: Failed to map the file", \
 	"munmap: Failed to unmap the file", \
-	"File architecture not suported. 64-bit ELF files only", \
+	"File architecture not suported. 32 & 64-bit ELF files only", \
 	"lseek: Failed to read file", \
 	"write: Failed to write to the file", \
 	"open: Failed to open/create output file", \
@@ -30,7 +30,7 @@ enum	ww_e_errors
 	WW_ERR_ALLOCMEM,		
 	WW_ERR_MMAP,
 	WW_ERR_MUNMAP,
-	WW_ERR_NOT64BITELF,
+	WW_ERR_NOT32OR64BITELF,
 	WW_ERR_LSEEK,
 	WW_ERR_WRITEFILE,
 	WW_ERR_OUTFILE,

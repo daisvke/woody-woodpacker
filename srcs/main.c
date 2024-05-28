@@ -4,6 +4,7 @@ unsigned char   *g_mapped_data;
 Elf64_Off       g_file_size;
 uint16_t        g_modes;
 char            *g_progname;
+int             g_elf_class;
 
 int main(int argc, char *argv[])
 {

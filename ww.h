@@ -66,6 +66,7 @@ extern unsigned char    *g_mapped_data;  // file is mapped in memory here
 extern Elf64_Off        g_file_size;     // size of the mapped file
 extern uint16_t         g_modes;         // options given from command line
 extern char            *g_progname;      // The name of the program is referenced there
+extern int             g_elf_class;
 /*-------------------------------------------------------*/
 
 size_t      ww_strlen(const char *s);

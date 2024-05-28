@@ -1,13 +1,14 @@
 #include "ww.h"
 
-static int  ww_is_elf64(unsigned char *g_mapped_data)
+static int  ww_set_elf_class(unsigned char *g_mapped_data)
 {
     Elf64_Ehdr  elf_header;
     ww_memcpy(&elf_header, g_mapped_data, sizeof(Elf64_Ehdr));
 
     // We get to EI_CLASS by moving forward for 4 bytes
     // (= 1st field's size of e_ident)
-    if (elf_header.e_ident[EI_CLASS] != ELFCLASS64)
+	g_elf_class = elf_header.e_ident[EI_CLASS];
+    if (g_elf_class != ELFCLASS64 && g_elf_class != ELFCLASS32)
         return -1;
     return 0;
 }
@@ -45,8 +46,8 @@ void    ww_map_file_into_memory(const char *filename)
     }
     close(fd); /* No need to keep the fd since the file is mapped */
 
-    if (ww_is_elf64(g_mapped_data) == -1)
-        ww_print_error_and_exit(WW_ERR_NOT64BITELF);
+    if (ww_set_elf_class(g_mapped_data) == -1)
+        ww_print_error_and_exit(WW_ERR_NOT32OR64BITELF);
 }
 
 void    ww_write_processed_data_to_file(void)

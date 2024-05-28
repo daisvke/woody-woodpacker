@@ -43,16 +43,29 @@ Elf64_Shdr	*ww_get_text_section_header()
 	return NULL;
 }
 
-static void	ww_checkelf_header_integrity_and_exit_on_error(Elf64_Ehdr *elf_header)
+static void	ww_checkelf_header_integrity_and_exit_on_error(Elf64_Ehdr *elf64_header)
 {
-	if (elf_header->e_ehsize != sizeof(Elf64_Ehdr) ||
-		elf_header->e_phentsize != sizeof(Elf64_Phdr) ||
-		elf_header->e_shentsize != sizeof(Elf64_Shdr) ||
-		(elf_header->e_type != ET_EXEC && elf_header->e_type != ET_DYN) ||
-		((elf_header->e_phoff +
-			(elf_header->e_phnum * elf_header->e_phentsize)) > g_file_size) ||
-		((elf_header->e_shoff +
-			(elf_header->e_shnum * elf_header->e_shentsize)) > g_file_size)
+	Elf32_Ehdr *elf32_header = (Elf32_Ehdr *)elf64_header;
+	if (g_elf_class == ELFCLASS32 &&
+		(elf32_header->e_ehsize != sizeof(Elf32_Ehdr) ||
+		elf32_header->e_phentsize != sizeof(Elf32_Phdr) ||
+		elf32_header->e_shentsize != sizeof(Elf32_Shdr) ||
+		(elf32_header->e_type != ET_EXEC && elf32_header->e_type != ET_DYN) ||
+		((elf32_header->e_phoff +
+			(elf32_header->e_phnum * elf32_header->e_phentsize)) > g_file_size) ||
+		((elf32_header->e_shoff +
+			(elf32_header->e_shnum * elf32_header->e_shentsize)) > g_file_size))
+	)
+	ww_print_error_and_exit(WW_ERR_CORRUPTEHDR);
+	else if (g_elf_class == ELFCLASS64 &&
+		(elf64_header->e_ehsize != sizeof(Elf64_Ehdr) ||
+		elf64_header->e_phentsize != sizeof(Elf64_Phdr) ||
+		elf64_header->e_shentsize != sizeof(Elf64_Shdr) ||
+		(elf64_header->e_type != ET_EXEC && elf64_header->e_type != ET_DYN) ||
+		((elf64_header->e_phoff +
+			(elf64_header->e_phnum * elf64_header->e_phentsize)) > g_file_size) ||
+		((elf64_header->e_shoff +
+			(elf64_header->e_shnum * elf64_header->e_shentsize)) > g_file_size))
 	)
 	ww_print_error_and_exit(WW_ERR_CORRUPTEHDR);
 }
