@@ -9,8 +9,8 @@ OUTFILE	= woody
 # **************************************************************************** #
 CC				= cc
 ASM				= nasm
-AS_OBJS_FLAGS	= -f elf64 -g
-AS_FLAGS		= -f bin -g
+ASOBJS_FLAGS	= -f elf64 -g
+ASFLAGS			= -f bin -g
 
 # **************************************************************************** #
 #       FLAGS                                                                  #
@@ -57,7 +57,7 @@ all: generate_hex_stub $(NAME)
 
 $(ASM_OBJS_DIR)%.o : $(ASM_SRCS_DIR)%.s
 	mkdir -p $(ASM_OBJS_DIR)
-	$(ASM) $(AS_OBJS_FLAGS) $< -o $@
+	$(ASM) $(ASOBJS_FLAGS) $< -o $@
 
 $(OBJS_DIR)%.o : $(SRCS_DIR)%.c $(INCS)
 	mkdir -p $(OBJS_DIR)

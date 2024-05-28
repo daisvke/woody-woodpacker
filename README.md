@@ -179,6 +179,9 @@ readelf [filename]
 hexdump -C [filename]
 vimdiff [filename 1] [filename 2]
 
+// Extract the .text section from code.o
+objcopy --dump-section .text=code-raw code.o
+
 // Print the loaded file content in hex form at address 0x401040
 gdb ./woody
 run
@@ -193,3 +196,4 @@ https://packetstormsecurity.com/files/12327/elf-pv.txt.html<br />
 https://grugq.github.io/docs/phrack-58-05.txt<br />
 https://wh0rd.org/books/linkers-and-loaders/linkers_and_loaders.pdf<br />
 https://hackademics.fr/forum/hacking-connaissances-avanc%C3%A9es/reversing/autres-aq/3096-reversing-tutorials-level-2-le-format-elf
+https://book.jorianwoltjer.com/binary-exploitation/shellcode

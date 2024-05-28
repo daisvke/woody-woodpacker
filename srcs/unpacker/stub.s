@@ -4,12 +4,22 @@ section .text
 global _start
 
 _start:
+;	call get_data
+run_quine:
+	mov		rax, 59  ; execve syscall number
+	lea		rdi, [rel program_path]
+	; Define the arguments array (argv)
+	; "argv" points to an array containing pointers to strings
+    lea		rsi, [rel argv]
+	; Define the environment variables array (envp)
+	; "envp" points to an array containing pointers to environment strings
+	xor      rdx, rdx
+	syscall
+
+modify_data_flags:
 	lea		r8, [rel _start]              				; Get _start address
 	mov		r9, r8                     					; Copy that to r9
 	sub		r9, [r8 + main_entry_offset_from_stub] 		; Compute main entry address into r9
-	jmp		get_data
-
-modify_data_flags:
 	; Use mprotect to change flags of .text memory region
 	; so that we can write the decrpyted data back into r9
 	mov		eax, 0xa									; sys_mprotect
@@ -19,10 +29,12 @@ modify_data_flags:
 	mov		edx, 0x7									; PROT_READ|PROT_WRITE|PROT_EXEC
 	syscall
 
-delete_file:
-	pop		rdi			; Pop the address of the string from the stack
-    mov     eax, 0x57	; System call number for unlink
-    syscall
+
+; delete_file:
+; 	pop		rdi			; Pop the address of the string from the stack
+;     mov     eax, 0x57	; System call number for unlink
+; 
+;     syscall
 
 prepare_decrpytion:
 	mov		r14, r8                     				; Copy _start address into r14
@@ -73,7 +85,7 @@ clean_return:
 	xor		r9, r9
 	xor		r10, r10
 	xor		r11, r11
-	xor		r13, r13
+	; xor		r13, r13 ; For print_data
 	xor		r14, r14
 	push	r12			; Push the main entry address to the stack
 	ret         	    ; On return, we will jump to the pushed address
@@ -87,18 +99,24 @@ print_data:
     syscall
 	ret
 
-get_data:
-	call modify_data_flags
+;get_data:
+;	call modify_data_flags
+;	call run_quine
 
-	db "t.txt", 0x0		; Null-terminated filename of a file to delete
-	; db "d", 0x0		; Null-terminated filename of a folder to delete
+	; db ".bin", 0x0		; Null-terminated filename of a file to delete
+	; db "t.txt", 0x0		; Null-terminated filename of a file to delete
+	
+program_path: db ".bin", 0
+argv: dq 0  ; Null-terminated array of pointers to strings
+envp: dq envp0, 0  ; Null-terminated array of pointers to strings
+envp0: db "PATH=/bin", 0  ; Null-terminated string
 
-	; Define the variables as placeholders
-	; The values will be patched from stub_injection.c
-	main_entry_offset_from_stub		dq 0x0000000000000000
-	text_segment_offset_from_stub	dq 0x0000000000000000
-	text_section_offset_from_stub	dq 0x0000000000000000
-	text_length						dq 0x0000000000000000
-	; Here we put a random string that will be replaced with the actual key.
-	; This is to reserve the space on the stub file for the key to come.
-    key 							db "01234567891011121314151617181920", 0x0
+; Define the variables as placeholders
+; The values will be patched from stub_injection.c
+main_entry_offset_from_stub:	dq 0x0000000000000000
+text_segment_offset_from_stub:	dq 0x0000000000000000
+text_section_offset_from_stub:	dq 0x0000000000000000
+text_length:					dq 0x0000000000000000
+; Here we put a random string that will be replaced with the actual key.
+; This is to reserve the space on the stub file for the key to come.
+key: 							db "01234567891011121314151617181920", 0x0
