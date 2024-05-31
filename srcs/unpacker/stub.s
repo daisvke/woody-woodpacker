@@ -4,22 +4,12 @@ section .text
 global _start
 
 _start:
-;	call get_data
-run_quine:
-	mov		rax, 59  ; execve syscall number
-	lea		rdi, [rel program_path]
-	; Define the arguments array (argv)
-	; "argv" points to an array containing pointers to strings
-    lea		rsi, [rel argv]
-	; Define the environment variables array (envp)
-	; "envp" points to an array containing pointers to environment strings
-	xor      rdx, rdx
-	syscall
-
-modify_data_flags:
 	lea		r8, [rel _start]              				; Get _start address
 	mov		r9, r8                     					; Copy that to r9
 	sub		r9, [r8 + main_entry_offset_from_stub] 		; Compute main entry address into r9
+	jmp		get_data
+
+modify_data_flags:
 	; Use mprotect to change flags of .text memory region
 	; so that we can write the decrpyted data back into r9
 	mov		eax, 0xa									; sys_mprotect
@@ -29,12 +19,24 @@ modify_data_flags:
 	mov		edx, 0x7									; PROT_READ|PROT_WRITE|PROT_EXEC
 	syscall
 
+ft_strlen:
+	pop		rdi					; Pop the address of the string from the stack
+	mov		rsi, rdi			; Save the string (used by print_woody)
+	xor		rax, rax			; Init rax to 0 by XORing bits
+	jmp		count_loop			; Jump to loop subroutine
 
-; delete_file:
-; 	pop		rdi			; Pop the address of the string from the stack
-;     mov     eax, 0x57	; System call number for unlink
-; 
-;     syscall
+count_loop:
+	cmp		byte [rdi + rax], 0xa	; Compare the current string position to 0xa (new line)
+	jz		print_woody				; If = 0xa, end of string => jump to return
+	inc		rax						; Increment rax by one
+	jmp		count_loop				; Continue loop
+
+print_woody:
+	mov		edx, eax	; Put the result from ft_strlen in edx (used by sys_write)
+	mov		eax, 0x1    ; System call number for sys_write
+	mov		edi, 0x1    ; File descriptor (stdout)
+	syscall         	; Call the kernel
+
 
 prepare_decrpytion:
 	mov		r14, r8                     				; Copy _start address into r14
@@ -51,7 +53,7 @@ xor_loop:
 	; bytes of r9 and r11, and replaces the original byte with the XORed
 	; value back into r9 (the original data location).
 	mov		al, byte [r11]	; Copy the current byte into al
-	mov		cl, 0x2a		; Load the value 42 into the low 8 bits of rcx
+	mov		cl, 42			; Load the value 42 into the low 8 bits of rcx
 	xor		byte [r9], al	; xor that with the current key byte
 	sub		byte [r9], cl
 
@@ -85,38 +87,33 @@ clean_return:
 	xor		r9, r9
 	xor		r10, r10
 	xor		r11, r11
-	; xor		r13, r13 ; For print_data
+	xor		r13, r13
 	xor		r14, r14
 	push	r12			; Push the main entry address to the stack
 	ret         	    ; On return, we will jump to the pushed address
 
 ; Print the processed data (only for testing)
 print_data:
-    mov		rax, 0x1
-    mov		rdi, 0x1
+    mov		rax, 1
+    mov		rdi, 1
     mov		rsi, r9
 	mov		rdx, r13
     syscall
 	ret
 
-;get_data:
-;	call modify_data_flags
-;	call run_quine
+get_data:
+	call modify_data_flags
 
-	; db ".bin", 0x0		; Null-terminated filename of a file to delete
-	; db "t.txt", 0x0		; Null-terminated filename of a file to delete
+	db "....WOODY....", 0xa		; New-line-terminated string to print
+
+	; Define the variables as placeholders
+	; The values will be patched from stub_injection.c
+	main_entry_offset_from_stub		dq 0x0000000000000000
+	text_segment_offset_from_stub	dq 0x0000000000000000
+	text_section_offset_from_stub	dq 0x0000000000000000
+	text_length						dq 0x0000000000000000
+	; Here we put a random string that will be replaced with the actual key.
+	; This is to reserve the space on the stub file for the key to come.
+    key 							db "01234567891011121314151617181920", 0x0
+
 	
-program_path: db ".bin", 0
-argv: dq 0  ; Null-terminated array of pointers to strings
-envp: dq envp0, 0  ; Null-terminated array of pointers to strings
-envp0: db "PATH=/bin", 0  ; Null-terminated string
-
-; Define the variables as placeholders
-; The values will be patched from stub_injection.c
-main_entry_offset_from_stub:	dq 0x0000000000000000
-text_segment_offset_from_stub:	dq 0x0000000000000000
-text_section_offset_from_stub:	dq 0x0000000000000000
-text_length:					dq 0x0000000000000000
-; Here we put a random string that will be replaced with the actual key.
-; This is to reserve the space on the stub file for the key to come.
-key: 							db "01234567891011121314151617181920", 0x0

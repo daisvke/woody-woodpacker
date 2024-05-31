@@ -8,8 +8,7 @@ char	*ww_get_filename(char *argv[])
 			continue;
 		else if (filename == NULL)
 			filename = argv[i];
-		else
-			return NULL;
+
 	}
 	return filename;
 }
