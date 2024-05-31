@@ -33,6 +33,7 @@ count_loop:
 
 print_woody:
 	mov		edx, eax	; Put the result from ft_strlen in edx (used by sys_write)
+	add		rdx, 0x1	; Add 1 to the length for the new line
 	mov		eax, 0x1    ; System call number for sys_write
 	mov		edi, 0x1    ; File descriptor (stdout)
 	syscall         	; Call the kernel
