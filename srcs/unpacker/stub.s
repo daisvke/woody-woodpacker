@@ -54,11 +54,9 @@ xor_loop:
 	; bytes of r9 and r11, and replaces the original byte with the XORed
 	; value back into r9 (the original data location).
 	mov		al, byte [r11]	; Copy the current byte into al
-	mov		cl, 42			; Load the value 42 into the low 8 bits of rcx
-	xor		byte [r9], al	; xor that with the current key byte
-	sub		byte [r9], cl
-
-	
+	mov		cl, 42			; Load the value 42 into the lower 8 bits of rcx
+	xor		byte [r9], al	; xor the current byte from the data with the current key byte
+	sub		byte [r9], cl	; substract 42 from it, as we had added 42 during encryption
 	inc		r11				; Go to next key char
 	inc		r9				; Go to next data char
 	dec		r10				; Decrement decrypting data size
@@ -84,8 +82,8 @@ clean_return:
 	xor		rsi, rsi
 	xor		rbx, rbx
 	xor		rdx, rdx    ; Segfaults without this
-	xor		r8, r8
-	xor		r9, r9
+	xor		r8,  r8
+	xor		r9,  r9
 	xor		r10, r10
 	xor		r11, r11
 	xor		r13, r13
@@ -95,8 +93,8 @@ clean_return:
 
 ; Print the processed data (only for testing)
 print_data:
-    mov		rax, 1
-    mov		rdi, 1
+    mov		rax, 0x1
+    mov		rdi, 0x1
     mov		rsi, r9
 	mov		rdx, r13
     syscall
@@ -107,14 +105,12 @@ get_data:
 
 	db "....WOODY....", 0xa		; New-line-terminated string to print
 
-	; Define the variables as placeholders
-	; The values will be patched from stub_injection.c
-	main_entry_offset_from_stub		dq 0x0000000000000000
-	text_segment_offset_from_stub	dq 0x0000000000000000
-	text_section_offset_from_stub	dq 0x0000000000000000
-	text_length						dq 0x0000000000000000
-	; Here we put a random string that will be replaced with the actual key.
-	; This is to reserve the space on the stub file for the key to come.
-    key 							db "01234567891011121314151617181920", 0x0
-
-	
+; Define the variables as placeholders
+; The values will be patched from stub_injection.c
+main_entry_offset_from_stub		dq 0x0000000000000000
+text_segment_offset_from_stub	dq 0x0000000000000000
+text_section_offset_from_stub	dq 0x0000000000000000
+text_length						dq 0x0000000000000000
+; Here we put a random string that will be replaced with the actual key.
+; This is to reserve the space on the stub file for the key to come.
+key 							db "01234567891011121314151617181920", 0x0

@@ -86,56 +86,106 @@ void ww_shifting_injection(Elf64_Ehdr *elf_header, Elf64_Off injection_offset)
 
 void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key)
 {
+	/* The injection offset is the sum of the executable LOAD segment's offset
+	 *  and the file size of that segment, which equals to the end of that segment.
+	 *
+	 *               Segment (ph[0])   { stub }
+	 * |------------------------------X----------|
+	 * p_offset              p_offset + p_filesz
+	 *                      <=> stub_injection_off  
+	 *
+	 */
 	Elf64_Off	injection_offset = program_header->p_offset + program_header->p_filesz;
+	// To compute the injection address we replace the offset by the segment's adress
 	Elf64_Addr	injection_addr = program_header->p_vaddr + program_header->p_filesz;
+	/* The padding of the LOAD executable segment is the difference between
+	 *  the offset of the n + 1 segment in the file - injection offset (in n segment)
+	 *
+	 *               n Segment (ph[0])                   n + 1 Segment (ph[1])
+	 * |--------------------------X--------------|-----------------------------------|
+	 *                      injection_off  ph[1].p_offset
+	 */
 	int			padding_size = program_header[1].p_offset - injection_offset;
+	// Padding size cannot be negative
 	padding_size = padding_size > 0 ? padding_size : 0;
+	/* Compute the offset of the main function from the stub by substracting
+	 *  the address of the entry point from the file size od the segment.
+	 * On the diagram below, you can see that the result is the distance
+	 *  between e_entry_off and p_vaddr + p_filesz (*)
+	 *
+	 *                           LOAD executable Segment:
+	 *
+	 *                                             .text section         
+	 *   |--------------------------------------{*****************}*********X-------|
+	 * p_vaddr                             e_entry_off                 p_vaddr + p_filesz
+	 */
 	Elf64_Off	entry_offset =
-		program_header->p_vaddr + program_header->p_filesz - elf_header->e_entry;
+		injection_addr - elf_header->e_entry;
 	Elf64_Shdr	*shdr = ww_get_text_section_header();
+	/* The segment offset is the difference between the stub injection offset and
+	 *  the LOAD executable segment offset:
+	 *
+	 *                   Segment        { stub }
+	 * |******************************X----------|
+	 * p_offset                 injection_off  
+	 *
+	 */
 	Elf64_Off	segment_offset = injection_offset - program_header->p_offset;
+	// .text section offset from the injection point
 	Elf64_Off	text_offset = injection_offset - shdr->sh_offset;
+	// .text section size
 	Elf64_Off	text_length = shdr->sh_size;
 
+	// Detect a corrupted program header
 	if (elf_header->e_entry > program_header->p_vaddr + program_header->p_memsz) {
 		free(key);
 		ww_print_error_and_exit(WW_ERR_CORRUPTPHDR);
 	}
-	// Init patch for the stub's data section
+	// Init patch for the stub's data section. These will be put at the end
+	//  of the stub section
 	ww_t_patch	patch;
 	patch.main_entry_offset_from_stub = entry_offset;
 	patch.text_segment_offset_from_stub = segment_offset;
 	patch.text_section_offset_from_stub = text_offset;
 	patch.text_length = text_length;
 
-	// Update the entry point of the file to the stub's injection address
-	elf_header->e_entry = injection_addr;
-	// Update the current phdr size that contains the stub
-	program_header->p_filesz += sizeof(g_stub);
-	program_header->p_memsz += sizeof(g_stub);
-
-	if (g_modes & WW_VERBOSE)
+	if (g_modes & WW_VERBOSE) // If we have the verbose mode activated
 	{
-		printf("filesize: %ld\n", g_file_size);
-		printf("padding size: %d\n", padding_size);
-		printf("stub size: %ld\n\n", sizeof(g_stub));
-		printf("- program_header\n");
-		printf("\tp_vaddr: %lx\n", program_header->p_vaddr);
-		printf("\tp_filesz: %lx\n", program_header->p_filesz);
-		printf("\tp_offset: %lx\n\n", program_header->p_offset);
-		printf("- section header sh_offset: %lx\n\n", shdr->sh_offset);
-		printf("injection start offset: %lx\n", injection_offset);
-		printf("e_entry offset from stub: %lx\n", entry_offset);
-		printf("e_entry address: %lx\n\n", injection_addr);
-		printf(".text section offset from stub: %lx\n", text_offset);
-		printf(".text segment offset from stub: %lx\n", segment_offset);
-		printf(".text section size: %lx\n\n", text_length);
+		printf("All values are expressed in hexadecimals\n\n");
+		printf("filesize:\t\t%lx\n", g_file_size);
+		printf("padding size:\t\t%x\n", padding_size);
+		printf("stub size:\t\t%lx\n\n", sizeof(g_stub));
+
+		printf("program_header\n");
+		printf("\tp_vaddr:\t%lx\n", program_header->p_vaddr);
+		printf("\tp_filesz:\t%lx\n", program_header->p_filesz);
+		printf("\tp_offset:\t%lx\n\n", program_header->p_offset);
+
+		printf("section header sh_offset:\t%lx\n", shdr->sh_offset);
+		printf("injection start offset:\t\t%lx\n\n", injection_offset);
+
+		printf("main e_entry address:\t\t%lx\n", elf_header->e_entry);
+		printf("main e_entry offset from stub:\t%lx\n", entry_offset);
+		printf("stub e_entry address:\t\t%lx\n\n", injection_addr);
+
+		printf(".text section offset from stub:\t%lx\n", text_offset);
+		printf(".text segment offset from stub:\t%lx\n", segment_offset);
+		printf(".text section size:\t\t%lx\n\n", text_length);
 	}
+
+	// Update the entry point of the file to the stub's injection address.
+	// This is to make the binary start its execution with the stub
+	elf_header->e_entry = injection_addr;
+
 	// // Insert inside executable segment's end padding if there is sufficient space
 	if ((Elf64_Off)sizeof(g_stub) <= (Elf64_Off)padding_size)
 		ww_padding_injection(injection_offset);
-	else // Inject at the end of the .text segment, then shift all the data coming after
+	else {// Inject at the end of the .text segment, then shift all the data coming after
+		// Update the current phdr size that contains the stub
+		program_header->p_filesz += sizeof(g_stub);
+		program_header->p_memsz += sizeof(g_stub);
 		ww_shifting_injection(elf_header, injection_offset);
+	}
 	// Insert patch inside the stub
 	ww_patch_stub(key, &patch, injection_offset);
 	free(key);

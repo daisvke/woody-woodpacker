@@ -189,7 +189,35 @@ x/16xw 0x401040
 
 // Add breakpoint at relative address 11ad if base address is 0x4011ad
 b *0x4011ad
+
+// Produce a trace trap that stops the execution at the position (useful when debugging)
+int3
 ```
+
+## Notes
+```
+    lodsb             ; Load the next byte of the message into AL
+    xor al, key       ; XOR the byte with the key
+    stosb             ; Store the encrypted byte back into memory
+    loop encrypt_loop ; Repeat for the entire message
+
+
+
+    lodsb:
+        lodsb stands for "load byte from source into AL."
+        It is used to load a byte from the memory location pointed to by the ESI register into the AL register.
+        After loading the byte, the ESI register is automatically incremented or decremented based on the direction flag (DF).
+        This instruction is commonly used in string operations to process bytes sequentially.
+
+    stosb:
+        stosb stands for "store byte from AL into destination."
+        It is used to store the byte in the AL register into the memory location pointed to by the EDI register.
+        After storing the byte, the EDI register is automatically incremented or decremented based on the direction flag (DF).
+        This instruction is also commonly used in string operations to write bytes sequentially to memory.
+The Direction Flag (DF) in x86 assembly language is a flag in the FLAGS register that controls the direction of string operations. The DF flag can be set or cleared using the std (set direction) and cld (clear direction) instructions, respectively. (default=0)
+
+```
+
 
 ## Useful Links
 https://packetstormsecurity.com/files/12327/elf-pv.txt.html<br />
