@@ -7,7 +7,6 @@ _start:
 	lea		r8, [rel _start]              				; Get _start address
 	mov		r9, r8                     					; Copy that to r9
 	sub		r9, [r8 + main_entry_offset_from_stub] 		; Compute main entry address into r9
-	jmp		get_data
 
 modify_data_flags:
 	; Use mprotect to change flags of .text memory region
@@ -20,7 +19,7 @@ modify_data_flags:
 	syscall
 
 ft_strlen:
-	pop		rdi					; Pop the address of the string from the stack
+	lea		rdi, [rel woody_msg]; Pop the address of the string from the stack
 	mov		rsi, rdi			; Save the string (used by print_woody)
 	xor		rax, rax			; Init rax to 0 by XORing bits
 	jmp		count_loop			; Jump to loop subroutine
@@ -100,11 +99,8 @@ print_data:
     syscall
 	ret
 
-get_data:
-	call modify_data_flags
-
-	db "....WOODY....", 0xa		; New-line-terminated string to print
-
+; New-line-terminated string to print
+woody_msg						db "....WOODY....", 0xa	
 ; Define the variables as placeholders
 ; The values will be patched from stub_injection.c
 main_entry_offset_from_stub		dq 0x0000000000000000
