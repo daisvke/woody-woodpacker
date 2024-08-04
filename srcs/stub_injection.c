@@ -177,9 +177,14 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 	// This is to make the binary start its execution with the stub
 	elf_header->e_entry = injection_addr;
 
-	// // Insert inside executable segment's end padding if there is sufficient space
-	if ((Elf64_Off)sizeof(g_stub) <= (Elf64_Off)padding_size)
-		ww_padding_injection(injection_offset);
+	// If padding injection has been selected, or default option is selected 
+	if (g_modes & WW_INJECTREG_PADDING) {
+		// Insert the stub inside the executable segment's end padding if there is sufficient space
+		if ((Elf64_Off)sizeof(g_stub) <= (Elf64_Off)padding_size)
+			ww_padding_injection(injection_offset);
+		// Otherwise, throw an error and quit
+		else ww_print_error_and_exit(WW_ERR_CANNOTINJECTPADDING);
+	} 
 	else {// Inject at the end of the .text segment, then shift all the data coming after
 		// Update the current phdr size that contains the stub
 		program_header->p_filesz += sizeof(g_stub);

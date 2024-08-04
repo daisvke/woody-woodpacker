@@ -38,6 +38,7 @@ enum	ww_e_errors
 	WW_ERR_CORRUPTPHDR,
 	WW_ERR_CORRUPTEHDR,
 	WW_ERR_UNRECOGNIZEDOPT,
+	WW_ERR_CANNOTINJECTPADDING
 };
 
 void	ww_print_error_and_exit(enum ww_e_errors err_code);

@@ -35,7 +35,7 @@ print_woody:
 	add		rdx, 0x1	; Add 1 to the length for the new line
 	mov		eax, 0x1    ; System call number for sys_write
 	mov		edi, 0x1    ; File descriptor (stdout)
-		syscall         	; Call the kernel
+	syscall         	; Call the kernel
 
 prepare_decrpytion:
 	mov		r14, r8                     				; Copy _start address into r14

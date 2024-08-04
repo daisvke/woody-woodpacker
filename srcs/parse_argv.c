@@ -32,7 +32,6 @@ static bool ww_check_opt(char *arg, char *opt)
 void ww_parse_argv(char *argv[])
 {
 	for (int i = 1; argv[i] != NULL; i++) {
-
 		if (ww_check_opt(argv[i], "--verbose") || ww_check_opt(argv[i], "-v"))
 			g_modes |= WW_VERBOSE;
 		else if (ww_check_opt(argv[i], "--injection-type=padding") || ww_check_opt(argv[i], "-i=p"))
@@ -48,4 +47,8 @@ void ww_parse_argv(char *argv[])
 			ww_print_error_and_exit(WW_ERR_UNRECOGNIZEDOPT);
 		}
 	}
+
+	// Default behavior is the padding injection
+	if (!(g_modes & WW_INJECTREG_PADDING || g_modes & WW_INJECTREG_SHIFT))
+		g_modes |= WW_INJECTREG_PADDING;
 }
