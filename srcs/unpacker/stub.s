@@ -35,8 +35,7 @@ print_woody:
 	add		rdx, 0x1	; Add 1 to the length for the new line
 	mov		eax, 0x1    ; System call number for sys_write
 	mov		edi, 0x1    ; File descriptor (stdout)
-	syscall         	; Call the kernel
-
+		syscall         	; Call the kernel
 
 prepare_decrpytion:
 	mov		r14, r8                     				; Copy _start address into r14
@@ -53,11 +52,11 @@ xor_loop:
 	; bytes of r9 and r11, and replaces the original byte with the XORed
 	; value back into r9 (the original data location).
 	mov		al, byte [r11]	; Copy the current byte into al
-	mov		cl, 42			; Load the value 42 into the lower 8 bits of rcx
-	xor		byte [r9], al	; xor the current byte from the data with the current key byte
-	sub		byte [r9], cl	; substract 42 from it, as we had added 42 during encryption
+	mov		cl, 0x2a		; Load the value 42 into the lower 8 bits of rcx
+	xor		byte [r14], al	; xor the current byte from the data with the current key byte
+	sub		byte [r14], cl	; substract 42 from it, as we had added 42 during encryption
 	inc		r11				; Go to next key char
-	inc		r9				; Go to next data char
+	inc		r14				; Go to next data char
 	dec		r10				; Decrement decrypting data size
 
 	; Check if the end of the key is reached
