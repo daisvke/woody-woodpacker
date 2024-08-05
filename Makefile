@@ -20,20 +20,19 @@ CFLAGS	= -Wall -Wextra -g #-Werror
 # **************************************************************************** #
 #       SOURCES                                                                #
 # **************************************************************************** #
-SRCS_DIR		= srcs/
-SRCS_FILES		= $(notdir $(wildcard $(SRCS_DIR)*.c))
+SRCS_DIR				= srcs/
+SRCS_FILES				= $(notdir $(wildcard $(SRCS_DIR)*.c))
 
-ASM_SRCS_DIR	= srcs/
-ASM_SRCS_FILES	= $(notdir $(wildcard $(ASM_SRCS_DIR)*.s))
+ASM_SRCS_DIR			= srcs/
+ASM_SRCS_FILES			= $(notdir $(wildcard $(ASM_SRCS_DIR)*.s))
 
-STUB_SRCS_DIR	= $(SRCS_DIR)unpacker/
-STUB_SRCS_FILES	= stub.s
-
+STUB_SRCS_DIR			= $(SRCS_DIR)unpacker/
+STUB_SRCS_FILES			= $(notdir $(wildcard $(STUB_SRCS_DIR)*.s))
 # **************************************************************************** #
 #       INCLUDES                                                               #
 # **************************************************************************** #
-INCS 			= errors.h ww.h $(STUB_HDR)
-STUB_HDR		= stub.h
+INCS 			= errors.h ww.h $(STUB_HDRS)
+STUB_HDRS		= stub.h stub_virus.h
 
 # **************************************************************************** #
 #       OBJ                                                                    #
@@ -53,27 +52,25 @@ STUB_OBJS		= $(addprefix $(STUB_OBJS_DIR), $(STUB_SRCS_FILES:.s=.o))
 
 .PHONY: all generate_hex_stub run debug clean fclean re debug
 
-all: generate_hex_stub $(NAME)
+all: $(STUB_OBJS) $(NAME)
 
-$(ASM_OBJS_DIR)%.o : $(ASM_SRCS_DIR)%.s
+$(ASM_OBJS_DIR)%.o: $(ASM_SRCS_DIR)%.s
 	mkdir -p $(ASM_OBJS_DIR)
 	$(ASM) $(ASOBJS_FLAGS) $< -o $@
 
-$(OBJS_DIR)%.o : $(SRCS_DIR)%.c $(INCS)
+$(OBJS_DIR)%.o: $(SRCS_DIR)%.c $(INCS)
 	mkdir -p $(OBJS_DIR)
 	$(CC) -I. -c $(CFLAGS) $< -o $@
 
-$(NAME) : $(OBJS) $(ASM_OBJS)
+$(NAME): $(OBJS) $(ASM_OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(ASM_OBJS) -o $(NAME)
 
 $(STUB_OBJS_DIR)%.o: $(STUB_SRCS_DIR)%.s
 	mkdir -p $(OBJS_DIR)
-	echo "unsigned char g_stub[] = {" > $(STUB_HDR)
+	echo "unsigned char g_$(basename $(notdir $<))[] = {" > $(basename $(notdir $<)).h
 	$(ASM) $(ASFLAGS) $< -o $@
-
-generate_hex_stub : $(STUB_OBJS)
-	xxd -i < $(STUB_OBJS) >> $(STUB_HDR)
-	echo "};" >> $(STUB_HDR)
+	xxd -i < $(basename $@).o >> $(basename $(notdir $<)).h
+	echo "};" >> $(basename $(notdir $<)).h
 
 # Run the compilation + packer + packed file
 run: re
