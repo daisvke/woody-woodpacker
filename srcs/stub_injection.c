@@ -96,8 +96,8 @@ void ww_shifting_injection(Elf64_Ehdr *elf_header, Elf64_Off injection_offset, s
 
 void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key)
 {
-	size_t		sizeof_stub = g_modes & WW_SHELLCODE_DEFAULT ? sizeof(g_stub) : sizeof(g_stub_virus);
-	printf("sizzez: %ld\n", sizeof_stub);
+	size_t		sizeof_stub = g_modes & WW_SHELLCODE_DEFAULT ?
+							sizeof(g_stub) : sizeof(g_stub_virus);
 
 	/* The injection offset is the sum of the executable LOAD segment's offset
 	 *  and the file size of that segment, which equals to the end of that segment.
@@ -109,8 +109,10 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 	 *
 	 */
 	Elf64_Off	injection_offset = program_header->p_offset + program_header->p_filesz;
+
 	// To compute the injection address we replace the offset by the segment's adress
 	Elf64_Addr	injection_addr = program_header->p_vaddr + program_header->p_filesz;
+
 	/* The padding of the LOAD executable segment is the difference between
 	 *  the offset of the n + 1 segment in the file - injection offset (in n segment)
 	 *
@@ -119,8 +121,10 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 	 *                      injection_off  ph[1].p_offset
 	 */
 	int			padding_size = program_header[1].p_offset - injection_offset;
+
 	// Padding size cannot be negative
 	padding_size = padding_size > 0 ? padding_size : 0;
+
 	/* Compute the offset of the main function from the stub by substracting
 	 *  the address of the entry point from the file size od the segment.
 	 * On the diagram below, you can see that the result is the distance
@@ -134,7 +138,6 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 	 */
 	Elf64_Off	entry_offset =
 		injection_addr - elf_header->e_entry;
-	Elf64_Shdr	*shdr = ww_get_text_section_header();
 	/* The segment offset is the difference between the stub injection offset and
 	 *  the LOAD executable segment offset:
 	 *
@@ -144,6 +147,8 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 	 *
 	 */
 	Elf64_Off	segment_offset = injection_offset - program_header->p_offset;
+
+	Elf64_Shdr	*shdr = ww_get_text_section_header();
 	// .text section offset from the injection point
 	Elf64_Off	text_offset = injection_offset - shdr->sh_offset;
 	// .text section size
@@ -164,18 +169,19 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 
 	if (g_modes & WW_VERBOSE) // If we have the verbose mode activated
 	{
-		printf("All values are expressed in hexadecimals\n\n");
-		printf("filesize:\t\t%lx\n", g_file_size);
-		printf("padding size:\t\t%x\n", padding_size);
-		printf("stub size:\t\t%lx\n\n", sizeof_stub);
+		printf("################### Injection data ###################\n");
+		printf("(all values are expressed in hexadecimal values)\n\n");
+		printf("target binary filesize:\t\t%lx\n", g_file_size);
+		printf(".text segment padding size:\t%x\n", padding_size);
+		printf("stub size:\t\t\t%lx\n\n", sizeof_stub);
 
-		printf("program_header\n");
-		printf("\tp_vaddr:\t%lx\n", program_header->p_vaddr);
-		printf("\tp_filesz:\t%lx\n", program_header->p_filesz);
-		printf("\tp_offset:\t%lx\n\n", program_header->p_offset);
+		printf("program_header:\n");
+		printf("\t\tp_vaddr:\t%lx\n", program_header->p_vaddr);
+		printf("\t\tp_filesz:\t%lx\n", program_header->p_filesz);
+		printf("\t\tp_offset:\t%lx\n\n", program_header->p_offset);
 
-		printf("section header sh_offset:\t%lx\n", shdr->sh_offset);
-		printf("injection start offset:\t\t%lx\n\n", injection_offset);
+		printf(".text section header sh_offset:\t%lx\n", shdr->sh_offset);
+		printf("stub injection start offset:\t%lx\n\n", injection_offset);
 
 		printf("main e_entry address:\t\t%lx\n", elf_header->e_entry);
 		printf("main e_entry offset from stub:\t%lx\n", entry_offset);
@@ -183,7 +189,9 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 
 		printf(".text section offset from stub:\t%lx\n", text_offset);
 		printf(".text segment offset from stub:\t%lx\n", segment_offset);
-		printf(".text section size:\t\t%lx\n\n", text_length);
+		printf(".text section size:\t\t%lx\n", text_length);
+
+		printf("########################################################\n\n");
 	}
 
 	// Update the entry point of the file to the stub's injection address.
@@ -204,7 +212,8 @@ void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *ke
 		program_header->p_memsz += sizeof_stub;
 		ww_shifting_injection(elf_header, injection_offset, sizeof_stub);
 	}
+
 	// Insert patch inside the stub
 	ww_patch_stub(key, &patch, injection_offset, sizeof_stub);
-	free(key);
+	free(key);	
 }

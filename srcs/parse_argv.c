@@ -1,5 +1,8 @@
 #include "ww.h"
 
+/* Get the filename from argv. It should correspond to the only arg
+ *  doesn't begin with '-'.
+ */ 
 char	*ww_get_filename(char *argv[])
 {
 	char *filename = NULL;
@@ -13,6 +16,7 @@ char	*ww_get_filename(char *argv[])
 	return filename;
 }
 
+// Check if the option given as 'arg' corresponds to the option given as 'opt'
 static bool ww_check_opt(char *arg, char *opt)
 {
 	int opt_len = strlen(opt);
@@ -29,8 +33,10 @@ static bool ww_check_opt(char *arg, char *opt)
 	return false;
 }
 
+// Parre the given arguments and activate options 
 void ww_parse_argv(char *argv[])
 {
+	// We begin at index = 1 as index 0 contains the program name
 	for (int i = 1; argv[i] != NULL; i++) {
 		if (ww_check_opt(argv[i], "--verbose") || ww_check_opt(argv[i], "-v"))
 			g_modes |= WW_VERBOSE;

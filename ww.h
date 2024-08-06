@@ -19,9 +19,8 @@
 #define WW_GREEN_COLOR     "\033[32m"
 #define WW_YELLOW_COLOR    "\033[33m"
 #define WW_RESET_COLOR     "\033[0m"
+
 /* Background colors */
-#define WW_GREEN_BG        "\033[42m"
-#define WW_YELLOW_BG       "\033[43m"
 #define WW_RESET_BG_COLOR  "\033[49m"
 
 /*------------------------ Defines, enum, struct --------------------------*/

@@ -57,18 +57,19 @@ static void	ww_checkelf_header_integrity_and_exit_on_error(Elf64_Ehdr *elf_heade
 	ww_print_error_and_exit(WW_ERR_CORRUPTEHDR);
 }
 
-/* Encrypt .text section before injection
- * as we want the final output file to have its main code obfuscated
+/* Encrypt .text section before injection as we want the final output file
+ *  to have its main code obfuscated in case we are packing a virus
  */
 void	ww_process_mapped_data()
 {
 	Elf64_Ehdr	*elf_header = (Elf64_Ehdr *)g_mapped_data;
+	// Check if the program_header is not corrupted
 	ww_checkelf_header_integrity_and_exit_on_error(elf_header);
+	// Retrieve the text section header
 	Elf64_Shdr	*txt_shdr = ww_get_text_section_header();
 	if (!txt_shdr) ww_print_error_and_exit(WW_ERR_NOTEXTSEC);
 
-	printf("\n" WW_YELLOW_BG " > STARTING ENCRYPTION OF THE .TEXT SECTION... < "
-		WW_RESET_BG_COLOR "\n");
+	printf("\n" " > STARTING ENCRYPTION OF THE .TEXT SECTION...\n\n");
 	// Generate the key that will be used for the encryption
 	char *key = ww_keygen(WW_KEYCHARSET, WW_KEYSTRENGTH);
 	printf("Generated random key => " WW_YELLOW_COLOR "%s\n", key);
@@ -77,15 +78,16 @@ void	ww_process_mapped_data()
 	 * The section will be decrypted by the latter during execution.
 	 */
 	xor_with_additive_cipher(
-		key,
-		WW_KEYSTRENGTH,
+		key,			// The randomly generated encryption key
+		WW_KEYSTRENGTH,	// The key width
+		// Get the .text section offset to start encrypting there 
 		g_mapped_data + txt_shdr->sh_offset,
-		txt_shdr->sh_size,
+		txt_shdr->sh_size, // The .text section size
 		0 // Encrypt mode
 	);
+
 	printf(WW_GREEN_COLOR "Done!\n\n" WW_RESET_COLOR);
 
-	printf(WW_YELLOW_BG " > STARTING PARASITE INJECTION... < "
-		WW_RESET_BG_COLOR "\n");
+	printf(" > STARTING PARASITE INJECTION...\n\n");
 	ww_process_segments(elf_header, key);
 }
