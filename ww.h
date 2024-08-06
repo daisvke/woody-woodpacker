@@ -9,8 +9,10 @@
 #include <sys/mman.h>   // For mapping
 #include <elf.h>        // For ELF header
 #include <string.h>
-#include <time.h>       // For rand & srand
+#include <time.h>       // For rand & srand (encryption key generation)
 #include "errors.h"
+
+/*-------------------------------- Colors ---------------------------------*/
 
 /* Text colors */
 #define WW_RED_COLOR       "\033[31m"
@@ -22,11 +24,15 @@
 #define WW_YELLOW_BG       "\033[43m"
 #define WW_RESET_BG_COLOR  "\033[49m"
 
+/*------------------------ Defines, enum, struct --------------------------*/
+
+// Name of the packed binary produced by the packer
 #define WW_PACKED_FILENAME "woody"
+// Error code
 #define WW_ERROR           1
+// Length of the key used by the encryptor
 #define WW_KEYSTRENGTH     32
-// Common value representing the size of a memory page
-// in many computer systems
+// Common value representing the size of a memory page in many computer systems
 #define WW_PAGE_SIZE       4096
 
 // Charset used for the encryption key
@@ -50,18 +56,19 @@ enum ww_eg_modes
 
 typedef struct ww_s_patch
 {
-    Elf64_Off   main_entry_offset_from_stub;   // main of the original file
-    Elf64_Off   text_segment_offset_from_stub; // .text segment offset
+    Elf64_Off   main_entry_offset_from_stub;   // main entry from the original file
+    Elf64_Off   text_segment_offset_from_stub; // .text segment offset (executable segment)
     Elf64_Off   text_section_offset_from_stub; // .text section offset
     Elf64_Off   text_length;                   // .text section size
 }   ww_t_patch;
 
-/*-------------------------------------------------------*/
-// Global variables
+/*---------------------------- Global variables ---------------------------*/
+
 extern unsigned char    *g_mapped_data;  // file is mapped in memory here
 extern Elf64_Off        g_file_size;     // size of the mapped file
 extern uint16_t         g_modes;         // options given from command line
-/*-------------------------------------------------------*/
+
+/*---------------------------- Function prototypes ------------------------*/
 
 size_t      ww_strlen(const char *s);
 void        *ww_memset(void *src, int c, size_t n);
@@ -73,8 +80,7 @@ Elf64_Shdr  *ww_get_text_section_header(void);
 void        ww_map_file_into_memory(const char *filename);
 void        ww_process_mapped_data(void);
 void        ww_write_processed_data_to_file(void);
-void        ww_inject_stub( \
-    Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key);
+void        ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key);
 void        xor_with_additive_cipher( \
     void *key, size_t key_length, void *data, size_t data_length, int mode);
 char        *ww_keygen(const char *_charset, size_t strength);

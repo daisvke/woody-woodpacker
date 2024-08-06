@@ -4,6 +4,7 @@
 # include <errno.h>
 # include <stdbool.h>
 
+// Error messages to display. The index is synchronized with the error code array below.
 # define WW_ERROR_MSG_ARRAY \
 { \
 	"Wrong number of arguments", \
@@ -20,8 +21,10 @@
 	"Corrupted program header", \
 	"Corrupted ELF header", \
 	"Unrecognized option", \
-}
+	"Cannot inject into padding: not sufficient padding space",\
+};
 
+// Error codes
 enum	ww_e_errors
 {
 	WW_ERR_BADARGNBR,
