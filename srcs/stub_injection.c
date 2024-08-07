@@ -29,6 +29,7 @@ void ww_shift_offsets_for_stub_insertion(
 		elf_header->e_shoff += stub_size_with_pad;
 }
 
+// This is only used along the shifting injection option
 void ww_generate_new_file_with_parasite(Elf64_Off injection_offset, size_t sizeof_stub)
 {
 
@@ -36,6 +37,7 @@ void ww_generate_new_file_with_parasite(Elf64_Off injection_offset, size_t sizeo
 	// Create a new file that can receive the mapped data + stub with padding
 	void *file_with_stub = malloc(g_file_size + stub_size_with_pad);
 	if (!file_with_stub) ww_print_error_and_exit(WW_ERR_ALLOCMEM);
+
 	// Copy from the mapped data until the injection point of the stub
 	ww_memcpy(file_with_stub, g_mapped_data, injection_offset);
 	ww_memset(file_with_stub + injection_offset, 0, stub_size_with_pad);
@@ -57,6 +59,7 @@ void ww_generate_new_file_with_parasite(Elf64_Off injection_offset, size_t sizeo
 	g_file_size += stub_size_with_pad;
 }
 
+// The last lines in the stub file are reserved for necessary data to be patched
 void ww_patch_stub(char *key, const ww_t_patch *patch, Elf64_Off injection_offset, size_t sizeof_stub)
 {
 	// Get the offset of the patch injection location in the stub
@@ -71,12 +74,14 @@ void ww_patch_stub(char *key, const ww_t_patch *patch, Elf64_Off injection_offse
 	ww_memcpy(g_mapped_data + patch_key_offset, key, WW_KEYSTRENGTH);
 }
 
+// This is the default injection option. It injects the shellcode into the
+//  executable segment's padding. Thus, this option doesn't need any shifting afterward.
 void ww_padding_injection(Elf64_Off injection_offset, size_t sizeof_stub)
 {
 	if (g_modes & WW_VERBOSE)
 		printf(WW_GREEN_COLOR "The shellcode is injected into the executable "
 			   "segment's padding.\n" WW_RESET_COLOR);
-	g_modes |= WW_INJECTREG_PADDING;
+	// Copy the hex formatted stub to the injection point in the mapped data
 	ww_memcpy(
 		g_mapped_data + injection_offset,
 		g_modes & WW_SHELLCODE_DEFAULT ? g_stub : g_stub_virus,
@@ -84,6 +89,8 @@ void ww_padding_injection(Elf64_Off injection_offset, size_t sizeof_stub)
 		);
 }
 
+// This is one of the injection options. It does it by injecting the stub at
+//  the end of the executable segment; then it shifts all the next elements accordingly
 void ww_shifting_injection(Elf64_Ehdr *elf_header, Elf64_Off injection_offset, size_t sizeof_stub)
 {
 	if (g_modes & WW_VERBOSE)

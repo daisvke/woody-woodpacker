@@ -58,7 +58,8 @@ void    ww_write_processed_data_to_file(void)
     int outfilefd = open(WW_PACKED_FILENAME, O_CREAT | O_RDWR | O_TRUNC, 0755);
     if (outfilefd == -1)
     {
-        // Unmap the file from memory
+        // Unmap the file from memory only if the injection was made into the
+		//  segment's padding (otherwise it is unmapped in a different section
         if (g_modes & WW_INJECTREG_PADDING)
             if (munmap(g_mapped_data, g_file_size) < 0)
                 ww_print_error_and_exit(WW_ERR_MUNMAP);
