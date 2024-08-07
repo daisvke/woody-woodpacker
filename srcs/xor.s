@@ -84,11 +84,12 @@ continue_loop:
 	cmp		r10, 0x0
 	; If not, continue loop
 	jne		xor_loop
+	; For testing:
 	; If reached, print the result
 	; call	print_data
 	; And return from the function after putting back the caller's
 	; original values in the registers
-	leave	; mov rsp, rbp ; pop rbp
+	leave
 	ret
 
 ; Print the processed data

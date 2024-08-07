@@ -4,31 +4,58 @@ section .text
 global _start
 
 _start:
+	; r8 now holds the address of the _start label. This is the base address from
+	;  which other offsets are calculated.
 	lea		r8, [rel _start]              				; Get _start address
-	mov		r9, r8                     					; Copy that to r9
+
+	mov		r9, r8                     					; Copy r8 to r9
+
 	sub		r9, [r8 + main_entry_offset_from_stub] 		; Compute main entry address into r9
+
+	; Explanation:
+	; 
+	; The reason for adding r8 to obtain variable values is due to the use of position
+	;  -independent code (PIC). PIC is commonly used in scenarios where the exact location
+	;  of the code in memory is not known ahead of time. 
+	;
+	; Thus,
+	; 	r8 + main_entry_offset_from_stub] <=> r9, value of main_entry_offset_from_stub
+	; And,
+	; 	sub r9, [r8 + main_entry_offset_from_stub]
+	;		<=> r9 = _start_address (r9) - main_entry_offset_from_stub
+	;		= address of main_entry
+	;
+	; |--------------------|-------------------------|----------------|
+	;            main_offset_from_stub            _start
+	;      <=> _start - main_offset
+	;      <=> main_entry_address
+	;
+	; Here, main_entry_offset_from_stub is an offset from _start. By adding this offset
+	;  to r8 (which holds _start address), we get the actual address of main_entry_offset_from_stub
+	;  and subtract it from r9 to get the main_entry address.
+	; This will allow the shellcode to get to the main entrypoint after it returns. 
 
 modify_data_flags:
 	; Use mprotect to change flags of .text memory region
 	; so that we can write the decrpyted data back into r9
 	mov		eax, 0xa									; sys_mprotect
 	mov		rdi, r8
-	sub		rdi, [r8 + text_segment_offset_from_stub]	; Compute segment address
+	sub		rdi, [r8 + text_segment_offset_from_stub]	; Compute segment offset
 	mov		rsi, [r8 + text_segment_offset_from_stub]	; segment size
 	mov		edx, 0x7									; PROT_READ|PROT_WRITE|PROT_EXEC
 	syscall
 
-ft_strlen:
+; Get the length of the string to print it
+strlen:
 	lea		rdi, [rel woody_msg]; Pop the address of the string from the stack
 	mov		rsi, rdi			; Save the string (used by print_woody)
-	xor		rax, rax			; Init rax to 0 by XORing bits
-	jmp		count_loop			; Jump to loop subroutine
+	xor		rax, rax			; Init rax to 0 by XORing bits. Index of string to print
 
-count_loop:
+strlen_loop:
 	cmp		byte [rdi + rax], 0xa	; Compare the current string position to 0xa (new line)
 	jz		print_woody				; If = 0xa, end of string => jump to return
 	inc		rax						; Increment rax by one
-	jmp		count_loop				; Continue loop
+	jmp		strlen_loop				; Continue loop
 
 print_woody:
 	mov		edx, eax	; Put the result from ft_strlen in edx (used by sys_write)
@@ -42,7 +69,6 @@ prepare_decrpytion:
 	sub		r14, [r8 + text_section_offset_from_stub]	; Compute section address into r14
 
 	mov		r10, [r8 + text_length]	; Assign .text section length to r10
-    mov		r12, r9					; Keep address of data in r12 for jumping to it while exiting
 	lea     rbx, [rel key]			; Assign address of the key string to rbx
 	mov		r11, rbx				; Copy that into r11
 
@@ -74,6 +100,8 @@ continue_loop:
 
 ; Reset all used registers, just in case
 clean_return:
+	push	r9			; Push the main entry address to the stack
+
 	xor		rax, rax
 	xor		rcx, rcx
 	xor		rdi, rdi
@@ -86,7 +114,6 @@ clean_return:
 	xor		r11, r11
 	xor		r13, r13
 	xor		r14, r14
-	push	r12			; Push the main entry address to the stack
 	ret         	    ; On return, we will jump to the pushed address
 
 ; Print the processed data (only for testing)
