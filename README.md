@@ -4,7 +4,7 @@
 This project is about coding a packer and an unpacker shellcode for ELF (Executable and Linkable Format) 64-bit binary files.
 <br /><br />
 "Packers" are tools whose task consists of compressing executable programs (.exe, .dll,.ocx,...) and/or encrypting them. <br />
-During the execution of a packer, a program passing through that packer is loaded in memory, compressed and encrypted. Then, during execution of the packed program, through the shellcode the packer will have injected, it will be decompressed, decrypted, and finally be executed.
+During the execution of a packer, a program passing through that packer is loaded in memory, compressed and encrypted. Then, during execution of the packed program, through the shellcode unpacker the packer will have injected, it will be decompressed, decrypted, and finally be executed.
 <br /><br />
 The existence of such programs is related to the fact that antivirus programs generally analyse programs when they are loaded in memory, before they are executed. <br />
 Thus, encryption and compression of a packer allow to bypass this behavior by obfuscating the content of an executable until its execution.
@@ -29,7 +29,7 @@ Packer                                        Unpacker
 |                         |                   |                         |
 +-------------------------+                   +-------------------------+
 ```
-Two distinct packers are involved: the packer and the unpacker.
+Two distinct elements are involved: the packer and the unpacker.
 
 The packer is a separate program that is used to encrypt or compress the target binary. It takes the original binary as input, applies specific encryption or compression techniques, and generates an encrypted or compressed binary as output. The packer is responsible for creating a specific format or structure for the encrypted/compressed binary, which may include additional information such as decryption routines or metadata.
 
@@ -93,52 +93,7 @@ When software or code is EIP-independent, it means that it does not rely on spec
 <br /><br />
 Please check man ELF for more details.
 
-### The section header
-
-In the context of object file formats, such as ELF, the section header is optional in certain cases. The section header table provides information about the layout and attributes of sections within the object file.
-<br /><br />
-Here are some cases where the section header may be optional:
-
-1. Simple Object Files: In some cases, when dealing with simple object files that do not have multiple sections or complex attributes, the section header table may be omitted to save space. This is often seen in smaller or minimalistic object files.
-
-2. Stripped Executables: When creating an executable file for distribution, it is common to strip the symbol and debug information from the binary. In this case, the section header table, along with other debugging-related sections, may be removed to reduce the file size and protect the original source code and symbols.
-
-3. Raw Data Files: If the object file is intended to be used purely as a container for raw data, without any need for detailed section information or processing, the section header table may be omitted. This is typically seen in cases where the object file is used as a data resource or input file for other tools or processes.
-<br /><br />
-It's important to note that the absence of the section header table in these cases may limit or hinder the ability to analyze or manipulate the object file in certain ways. The section header provides valuable metadata and allows tools and systems to understand the structure and characteristics of the object file.
-
-### ELF infection
-
-* A process image consists of a 'text segment' and a 'data segment'. The text
-segment is given the memory protection r-x (from this its obvious that self
-modifying code cannot be used in the text segment).  The data segment is
-given the protection rw-.
-* Program header: e_entry: This member gives the virtual address to which the system first transfers control, thus starting the process.
-* Encrypting all sections of an ELF file can have some implications:
-
-    1. Compatibility: Encrypting all sections may affect the functionality of the ELF file, especially if there are sections that require specific processing or are needed for proper execution.
-
-    2. Performance: Decrypting sections at runtime can introduce overhead and affect the performance of the program.
-
-    3. Debugging and Analysis: Encrypting all sections can make it more challenging to analyze and debug the program, as it obscures the contents of the sections. This can make it difficult to troubleshoot issues or understand the program's behavior.
-
-    4. Dependencies: Some sections, such as the ELF header and program headers, are critical for proper execution and loading of the ELF file.
-* Encryption is typically applied to specific sections or segments in an ELF file to protect sensitive code or data. These sections can be selectively encrypted while leaving the section header and other critical parts of the ELF file intact. By doing so, the ELF file retains its structure and can still be processed by tools without issues. Thus, we will always leave out the ELF header and the program header from the encryption.
-
-* In the ELF file format, the program header type (`p_type`) field specifies the type of each program header entry. Here are some common program header types and their corresponding decimal values:
-
-1. `PT_NULL`: Null type (0)
-2. `PT_LOAD`: Loadable segment (1) => ENCRYPT
-3. `PT_DYNAMIC`: Dynamic linking information (2) => ENCRYPT
-4. `PT_INTERP`: Program interpreter (3)
-5. `PT_NOTE`: Auxiliary information (4)
-6. `PT_SHLIB`: Reserved (5)
-7. `PT_PHDR`: Program header table (6)
-8. `PT_TLS`: Thread-local storage segment (7)
-9. `PT_LOOS` to `PT_HIOS`: Operating system-specific values (inclusive range)
-10. `PT_LOPROC` to `PT_HIPROC`: Processor-specific values (inclusive range)
-
-These are just a few examples, and there may be other program header types depending on the specific needs and extensions of the ELF file format.
+### ELF Infection
 
 * In the context of packers and unpackers, the stub and the unpacker are closely related but not necessarily synonymous terms.
 <br /><br />
@@ -148,43 +103,45 @@ The unpacker, on the other hand, is the actual code responsible for unpacking or
 
 * When inserting the stub or the additional code into an ELF file, there are a few common approaches to consider:
 
-    1. At the End of the File: One approach is to append the stub code at the end of the ELF file, after all existing sections and data. This can be done by extending the file size and writing the new code at the appended location. The stub can then be executed as part of the program's execution flow.
+    1. At the End of the file/a segment/a section: One approach is to append the stub code at the end of a block of code. This can be done by extending the file size and writing the new code at the appended location, then shifting all the elements behind.
 
     2. In Padding Areas: ELF files often have padding areas between sections or segments. These padding areas are typically filled with zeroes. We can utilize these unused spaces to insert the stub code. However, these padding areas may not always be present or of sufficient size, depending on the specific ELF file structure.
 
     3. Reserved Sections: If the ELF file contains reserved or unused sections, we can repurpose one of these sections to hold the stub code. In that case we have to make sure that the selected section does not interfere with the original functionality of the ELF file or any dependencies.
 
-### Keygen
-Our keygen function generates a random encryption key of a specified width using a given character set. It seeds the random number generator with the current time, and selects random characters from the character set to build the key.
+Our program uses the second approach by default. However, in case the padding size is inferior to the stub size, then it uses the first approach, inserting the stub after the executable segment.
 
 ### Data encryption
-* XOR-based Encryption
-* In addition to XOR encryption, we've enhanced our encryption algorithm by incorporating an additive cipher. The additive cipher, also known as a Caesar cipher, shifts each character of the plaintext by a fixed amount (the key) before performing the XOR operation. This additional step adds another layer of complexity to the encryption process.
+* Our keygen function generates a random encryption key of a specified width using a given character set. It seeds the random number generator with the current time, and selects random characters from the character set to build the key.
+* We've enhanced our XOR-based encryption algorithm by incorporating an additive cipher. The additive cipher, also known as a Caesar cipher, shifts each character of the plaintext by a fixed amount (the key) before performing the XOR operation. This additional step adds another layer of complexity to the encryption process.
 
-## Allowed functions
-* open, close, exit
-* fpusts, fflush, lseek
-* mmap, munmap, mprotect
-* perror, strerror
-* syscall
-* the functions of the printf family
-* the function authorized within libft (read, write, malloc, free, for example)
+### Payload
+By default, the payload is only a string that will be displayed before the execution of the target program.
+However we have added a 'virus' mode that in fact is a quine binary executed by the shellcode; a piece of code that replicates itself on the current directory.
 
-## Todo
-- Protect xor.s args
-
-## Useful commands
+## Commands
 ```
-readelf [filename]
-hexdump -C [filename]
-vimdiff [filename 1] [filename 2]
+// Make and run the packer with the default options. Then, run the packed binary. All with valgrind
+make run
+
+// Run the packer with verbose mode, padding injection and virus mode on, then run the binary
+./woody_woodpacker /bin/ls -v -i=p -s=v  && ./woody
+
+// Useful commands
+
+readelf -l [filename]	// Check program headers of the file
+readelf -S [filename]	// Check section headers
+
+hexdump -C [filename]	// Check the file in hex format
+
+vimdiff [filename 1] [filename 2] // Check the difference between two files
 
 // Extract the .text section from code.o
 objcopy --dump-section .text=code-raw code.o
 
-// Print the loaded file content in hex form at address 0x401040
+// Print the loaded file content in hex format at address 0x401040
 gdb ./woody
-run
+run (or r)
 x/16xw 0x401040
 
 // Add breakpoint at relative address 11ad if base address is 0x4011ad
@@ -217,7 +174,6 @@ int3
 The Direction Flag (DF) in x86 assembly language is a flag in the FLAGS register that controls the direction of string operations. The DF flag can be set or cleared using the std (set direction) and cld (clear direction) instructions, respectively. (default=0)
 
 ```
-
 
 ## Useful Links
 https://packetstormsecurity.com/files/12327/elf-pv.txt.html<br />
