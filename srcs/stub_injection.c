@@ -94,7 +94,8 @@ void ww_padding_injection(Elf64_Off injection_offset, size_t sizeof_stub)
 void ww_shifting_injection(Elf64_Ehdr *elf_header, Elf64_Off injection_offset, size_t sizeof_stub)
 {
 	if (g_modes & WW_VERBOSE)
-		printf(WW_GREEN_COLOR "The executable segment's padding size is smaller than the code "
+		printf(WW_GREEN_COLOR "Either you have selected the shifting injection mode,"
+				" or the executable segment's padding size is smaller than the code "
 			   "to be injected.\nThe shellcode will be injected anyway and all data"
 			   " following the injection point will be shifted.\n" WW_RESET_COLOR);
 	ww_shift_offsets_for_stub_insertion(elf_header, injection_offset, sizeof_stub);
