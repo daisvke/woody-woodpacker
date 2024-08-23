@@ -7,7 +7,7 @@ uint16_t        g_modes;
 int main(int argc, char *argv[])
 {
 	(void)argc;
-	// Parse the arguments give through commanndline
+	// Parse the arguments given through the commannd line
     ww_parse_argv(argv);
 
 	// Get the target binary filename from the given arguments
