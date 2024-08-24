@@ -53,8 +53,8 @@ static void	ww_checkelf_header_integrity_and_exit_on_error(Elf64_Ehdr *elf_heade
 			(elf_header->e_phnum * elf_header->e_phentsize)) > g_file_size) ||
 		((elf_header->e_shoff +
 			(elf_header->e_shnum * elf_header->e_shentsize)) > g_file_size)
-	)
-	ww_print_error_and_exit(WW_ERR_CORRUPTEHDR);
+		)
+		ww_print_error_and_exit(WW_ERR_CORRUPTEHDR);
 }
 
 /* Encrypt .text section before injection as we want the final output file
