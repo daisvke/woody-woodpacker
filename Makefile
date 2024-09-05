@@ -88,6 +88,6 @@ clean:
 	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR)
 
 fclean: clean
-	rm -f $(NAME) $(OUTFILE) $(STUB_HDRS)
+	rm -f $(NAME) $(OUTFILE)
 
 re: fclean all
