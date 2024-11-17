@@ -19,7 +19,7 @@ _start:
 	;  of the code in memory is not known ahead of time. 
 	;
 	; Thus,
-	; 	r8 + main_entry_offset_from_stub] <=> r9, value of main_entry_offset_from_stub
+	; 	r8 + [main_entry_offset_from_stub] <=> r9, value of main_entry_offset_from_stub
 	; And,
 	; 	sub r9, [r8 + main_entry_offset_from_stub]
 	;		<=> r9 = _start_address (r9) - main_entry_offset_from_stub
