@@ -8,6 +8,40 @@ During the execution of a packer, a program passing through that packer is loade
 The existence of such programs is related to the fact that antivirus programs generally analyze programs when they are loaded into memory, before execution.  
 Thus, encryption and compression of a packer allow it to bypass this behavior by obfuscating the content of an executable until its execution.
 
+
+## **Commands**
+```bash
+# Make and run the packer with the default options, then run the packed binary, all with valgrind
+make run
+
+# Run the packer with verbose mode, padding injection, and virus mode on, then run the binary
+./woody_woodpacker /bin/ls -v -i=p -s=v  && ./woody
+
+# Useful commands
+
+readelf -l [filename]   # Check program headers of the file
+readelf -S [filename]   # Check section headers
+
+hexdump -C [filename]   # Check the file in hex format
+
+vimdiff [filename 1] [filename 2]  # Check the difference between two files
+
+# Extract the .text section from code.o
+objcopy --dump-section .text=code-raw code.o
+
+# Print the loaded file content in hex format at address 0x401040
+gdb ./woody
+run (or r)
+x/16xw 0x401040
+
+# Add breakpoint at relative address 11ad if base address is 0x4011ad
+b *0x4011ad
+
+# Produce a trace trap that stops the execution at the position (useful when debugging)
+int3
+```
+
+
 ## **Technical Aspects**
 
 ### **Packers and Unpackers**
@@ -125,37 +159,6 @@ We have enhanced our XOR-based encryption algorithm by incorporating an **additi
 
 By default, the payload is a string displayed before the execution of the target program. However, we’ve added a **‘virus’ mode**, which is a quine binary executed by the shellcode. A quine is a piece of code that replicates itself in the current directory.
 
-## **Commands**
-```bash
-// Make and run the packer with the default options, then run the packed binary, all with valgrind
-make run
-
-// Run the packer with verbose mode, padding injection, and virus mode on, then run the binary
-./woody_woodpacker /bin/ls -v -i=p -s=v  && ./woody
-
-// Useful commands
-
-readelf -l [filename]   // Check program headers of the file
-readelf -S [filename]   // Check section headers
-
-hexdump -C [filename]   // Check the file in hex format
-
-vimdiff [filename 1] [filename 2]  // Check the difference between two files
-
-// Extract the .text section from code.o
-objcopy --dump-section .text=code-raw code.o
-
-// Print the loaded file content in hex format at address 0x401040
-gdb ./woody
-run (or r)
-x/16xw 0x401040
-
-// Add breakpoint at relative address 11ad if base address is 0x4011ad
-b *0x4011ad
-
-// Produce a trace trap that stops the execution at the position (useful when debugging)
-int3
-```
 
 ## **Notes**
 ```asm
