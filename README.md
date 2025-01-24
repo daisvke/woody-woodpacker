@@ -16,9 +16,10 @@ make run
 
 # Run the packer with verbose mode, padding injection, and virus mode on, then run the binary
 ./woody_woodpacker /bin/ls -v -i=p -s=v  && ./woody
+```
 
-# Useful commands
-
+### Useful commands
+```bash
 readelf -l [filename]   # Check program headers of the file
 readelf -S [filename]   # Check section headers
 
