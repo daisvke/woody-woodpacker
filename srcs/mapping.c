@@ -25,7 +25,7 @@ void    ww_map_file_into_memory(const char *filename)
         ww_print_error_and_exit(WW_ERR_LSEEK);
     else g_file_size = res; // Assign the filesize to the global variable
     // Put back the cursor at the beginning of the file
-    if (lseek(fd, 0, SEEK_SET < 0))
+    if (lseek(fd, 0, SEEK_SET) < 0)
         ww_print_error_and_exit(WW_ERR_LSEEK);
 
     /* Map the file into memory
