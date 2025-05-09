@@ -1,7 +1,7 @@
 # **woody-woodpacker**
 
 ## **Description**
-This project is about coding a packer and an unpacker shellcode for ELF (Executable and Linkable Format) 64-bit binary files.
+This project is for educational purposes only. It is about coding a packer and an unpacker shellcode for ELF (Executable and Linkable Format) 64-bit binary files.
 
 "Packers" are tools whose task consists of compressing executable programs (.exe, .dll, .ocx, etc.) and/or encrypting them.  
 During the execution of a packer, a program passing through that packer is loaded in memory, compressed, and encrypted. Then, during execution of the packed program, the shellcode unpacker that the packer will have injected will decompress, decrypt, and finally execute the program.  
