@@ -319,3 +319,9 @@ b *0x4011ad
 # Produce a trace trap that stops the execution at the position (useful when debugging)
 int3
 ```
+
+# **Bonus ideas**
+- 32-bit support
+- Custom key parameter
+- PE / Mach-O support
+- Compression
