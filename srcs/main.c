@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     ww_map_file_into_memory(filename);
 
 	// Abort if the current target already contains our signature
-    search_in_binary((char *)g_mapped_data, g_file_size, WW_SIGNATURE, strlen(WW_SIGNATURE));
+    search_str_in_binary((char *)g_mapped_data, g_file_size, WW_SIGNATURE, strlen(WW_SIGNATURE));
 
 	// Process the encryption, the injection, etc
     ww_process_mapped_data();

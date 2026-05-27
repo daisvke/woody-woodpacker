@@ -86,7 +86,7 @@ void        ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, c
 void        xor_with_additive_cipher( \
                 void *key, size_t key_length, void *data, size_t data_length, int mode);
 char        *ww_keygen(const char *_charset, size_t strength);
-void        search_in_binary( \
+void        search_str_in_binary( \
                 const char *data, size_t data_size, const char *substring, size_t substring_length);
 
 #endif
