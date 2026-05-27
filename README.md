@@ -1,25 +1,302 @@
 # **woody-woodpacker**
 
-## **Description**
-This project is about coding a packer and an unpacker shellcode for ELF (Executable and Linkable Format) 64-bit binary files.
+## **Table of Contents**
 
-"Packers" are tools whose task consists of compressing executable programs (.exe, .dll, .ocx, etc.) and/or encrypting them.  
-During the execution of a packer, a program passing through that packer is loaded in memory, compressed, and encrypted. Then, during execution of the packed program, the shellcode unpacker that the packer will have injected will decompress, decrypt, and finally execute the program.  
-The existence of such programs is related to the fact that antivirus programs generally analyze programs when they are loaded into memory, before execution.  
-Thus, encryption and compression of a packer allow it to bypass this behavior by obfuscating the content of an executable until its execution.
+* [Overview](#overview)
+* [Execution Flow](#execution-flow)
+* [Runtime Behavior](#runtime-behavior)
+* [ELF 64-bit File Structure](#elf-64-bit-file-structure)
+* [Injection Mechanism](#injection-mechanism)
+* [Stub Patch System](#stub-patch-system)
+* [Entry Point Redirection](#entry-point-redirection)
+* [Encryption System](#encryption-system)
+* [Commands](#commands)
+* [Debug Tools](#debug-tools)
 
-This project is provided for educational and research purposes only.
+---
 
-## **Commands**
+# **Overview**
+
+This project implements a **64-bit ELF packer with runtime unpacking capabilities**.
+
+It transforms an ELF binary into a new executable (`woody`) that embeds:
+
+* an encrypted copy of the original executable segment
+* a custom unpacking stub injected into the binary
+
+At runtime, the stub reconstructs the original program in memory and transfers execution back to it, preserving identical behavior while modifying only the binary representation.
+
+---
+
+# **Execution Flow**
+
+```text
+Original ELF
+→ Parse ELF headers & program headers
+→ Locate executable PT_LOAD segment
+→ Extract segment (includes .text region)
+→ Encrypt payload (XOR + additive cipher)
+→ Inject stub into executable segment region
+   (padding or shifting mode)
+→ Patch stub with metadata (offsets, sizes, key)
+→ Modify ELF entry point (e_entry → stub)
+→ Generate "woody"
+
+Runtime:
+→ Kernel loads ELF
+→ Execution starts in stub
+→ Stub decrypts payload in memory
+→ Restores original code
+→ Prints: ....WOODY.....
+→ Jumps to original entry point
+→ Original program executes
+```
+
+---
+
+# **Runtime Behavior**
+
+At execution time, a packed `/bin/whoami` behaves as follows:
+
+```text
+....WOODY.....
+username
+```
+
+Except for the printed string, the final behavior remains strictly identical to the original binary.
+
+---
+
+# **ELF 64-bit File Structure**
+
+```text
++----------------------------------------------------+
+|                    ELF Header                      |
+|            (64 bytes, ELF64_Ehdr structure)        |
++----------------------------------------------------+
+|                Program Header Table                |
+|   (Variable size, ELF64_Phdr entries)              |
+|   describes memory-mapped segments                 |
++----------------------------------------------------+
+|                   Text Section                     |
+|   (Executable code inside PT_LOAD segment)         |
++----------------------------------------------------+
+|                   Data Section                     |
+|   (Initialized data inside PT_LOAD segment)        |
++----------------------------------------------------+
+|                 Symbol Table Section               |
+|   (ELF64_Sym entries)                              |
++----------------------------------------------------+
+|                 String Table Section               |
+|   ("name1\0name2\0...")                            |
++----------------------------------------------------+
+|                Section Header Table (optional)     |
+|   (ELF64_Shdr entries)                             |
++----------------------------------------------------+
+```
+
+---
+
+# **Injection Mechanism**
+
+The stub is injected into the **executable PT_LOAD segment**, which typically contains:
+
+* `.text`
+* executable data pages
+* padding between segments
+
+It is not restricted to `.text` only, but placed inside the **executable memory-mapped region**.
+
+---
+
+## **1. Padding Injection (preferred mode)**
+
+Used when sufficient space exists inside the executable segment.
+
+Condition:
+
+```
+sizeof_stub ≤ padding_size
+```
+
+Where:
+
+```
+padding_size = next_segment.p_offset - injection_offset
+```
+
+Behavior:
+
+* stub is written directly into existing padding
+* no ELF relocation required
+* no structural modification of headers
+
+```text
+[ PT_LOAD (code + .text) | padding | STUB ]
+```
+
+---
+
+## **2. Shifting Injection (fallback mode)**
+
+Used when padding is insufficient or explicitly required.
+
+### Step 1 — Extend segment size
+
+```c
+p_filesz += sizeof_stub;
+p_memsz  += sizeof_stub;
+```
+
+---
+
+### Step 2 — Relocate ELF structures
+
+All headers after injection are updated:
+
+* program headers offsets shifted
+* section headers offsets shifted
+* ELF section header table offset updated
+
+---
+
+### Step 3 — Rebuild binary layout
+
+```text
+[ original ELF ]
+[ STUB inserted ]
+[ shifted ELF data ]
+```
+
+---
+
+# **Stub Patch System**
+
+The injected stub is patched with runtime metadata:
+
+```c
+ww_t_patch patch;
+```
+
+This includes:
+
+* offset from stub to original entry point
+* `.text` section offset relative to stub
+* `.text` size
+* segment relocation offsets
+
+Layout inside binary:
+
+```text
+[ STUB ........ PATCH ........ KEY ]
+```
+
+---
+
+# **Entry Point Redirection**
+
+The ELF entry point is modified:
+
+```c
+e_entry = injection_addr;
+```
+
+Result:
+
+```text
+Before: entry → main()
+After:  entry → stub → main()
+```
+
+---
+
+# **Encryption System**
+
+## XOR Cipher
+
+* symmetric encryption
+* same function used for encryption and decryption
+
+## Additive Layer
+
+Applied before XOR:
+
+```
+byte → +offset → XOR → encrypted
+encrypted → XOR → -offset → original
+```
+
+---
+
+# **Commands**
+
+## Basic usage
+
 ```bash
+make # Build project
+./woody_woodpacker <binary> [OPTIONS]
+
 # Make and run the packer with the default options, then run the packed binary, all with valgrind
 make run
 
-# Run the packer with verbose mode, padding injection, and then run the binary
-./woody_woodpacker /bin/ls -v -i=p && ./woody
+# Example: run the packer with verbose mode, padding injection mode, then run the binary
+./woody_woodpacker /bin/ls -i=p -s=v  && ./woody
+
 ```
 
-### Useful commands
+---
+
+## Options
+
+### Verbose mode
+
+Displays detailed information about:
+
+* ELF parsing
+* injection offsets
+* padding analysis
+* relocation operations
+* stub patch values
+
+```bash
+-v
+--verbose
+```
+
+---
+
+### Injection mode: padding
+
+Attempts to inject stub into existing executable segment padding.
+
+```bash
+-i=p
+--injection-type=padding
+```
+
+* safest mode
+* no ELF restructuring
+* requires enough free space
+
+---
+
+### Injection mode: shift
+
+Forces structural modification of ELF when padding is insufficient or explicitly selected.
+
+```bash
+-i=s
+--injection-type=shift
+```
+
+* rewrites ELF layout
+* shifts headers and segments
+* guarantees injection success
+
+---
+
+# **Debug tools**
+
 ```bash
 readelf -l [filename]   # Check program headers of the file
 readelf -S [filename]   # Check section headers
@@ -42,131 +319,3 @@ b *0x4011ad
 # Produce a trace trap that stops the execution at the position (useful when debugging)
 int3
 ```
-
-
-## **Technical Aspects**
-
-### **Packers and Unpackers**
-```
-Packer                                        Unpacker
-+-------------------------+                   +-------------------------+
-|                         |                   |                         |
-|    Input Binary         |                   |   Encrypted/Compressed  |
-|                         |                   |       Binary            |
-+----------+--------------+                   +-----------+-------------+
-           |                                              |
-           |                                              |
-           |                                              |
-           v                                              v
-+----------+--------------+                   +-----------+-------------+
-|                         |                   |                         |
-|    Encrypted/Compressed |                   |  Decrypted/Decompressed |
-|        Binary           |                   |         Binary          |
-|                         |                   |                         |
-+-------------------------+                   +-------------------------+
-```
-Two distinct elements are involved: the packer and the unpacker.
-
-The **packer** is a separate program used to encrypt or compress the target binary. It takes the original binary as input, applies encryption or compression techniques, and generates an encrypted or compressed binary as output. The packer is responsible for creating a specific format or structure for the encrypted/compressed binary, which may include additional information such as decryption routines or metadata.
-
-The **unpacker** is included inside the generated file during the build process. It is a special code or routine that is loaded and executed when the generated file is started. Its role is to decrypt and/or decompress the packed binary to restore it to its original form before execution.
-
-### **The 64-bit ELF File Structure**
-
-Below is a textual representation of a binary file with its ELF header (64-bit) and other regions, along with their byte sizes and corresponding structures:
-
-```
-+----------------------------------------------------+
-|                    ELF Header                      |
-|            (64 bytes, ELF64_Ehdr structure)        |
-+----------------------------------------------------+
-|                Program Header Table                |
-|   (Variable size, contains ELF64_Phdr structures)  |
-|                 contains info about:               |
-|                     Segment 1                      |
-|                     Segment 2...                   |
-|                  ...Segment n                      |
-+----------------------------------------------------+
-|                   Text Section                     |
-|               (Variable size and data)             |
-+----------------------------------------------------+
-|                   Data Section                     |
-|               (Variable size and data)             |
-+----------------------------------------------------+
-|                 Symbol Table Section               |
-|   (Variable size, contains ELF64_Sym structures)   |
-+----------------------------------------------------+
-|                 String Table Section               |
-|          (Variable size, contains strings)         |      
-|       Contains a single string in the format:      |
-|              "name1\0name2\0name3\0"               |
-+----------------------------------------------------+
-|                Section Header Table (optional)     |
-|   (Variable size, contains ELF64_Shdr structures)  |
-+----------------------------------------------------+
-```
-
-Here's a brief explanation of each component:
-
-- **ELF Header:** Contains essential information about the file, including the ELF identification, file type, architecture, entry point, program header table offset, section header table offset, and more.
-
-- **Program Header Table:** Describes the segments or sections in the binary file (e.g., the code segment, data segment, dynamic linking information). Each entry follows the ELF64_Phdr structure and provides details such as segment type, offset, virtual address, file size, and memory size. The size of the program header table depends on the number of entries.  
-You can view program header details with:  
-```bash
-readelf -l [filename]
-```
-
-- **Section Header Table:** Contains information about each section in the binary, including name, type, flags, offset, size, etc. Each entry follows the ELF64_Shdr structure. The section header table size depends on the number of sections.
-
-- **Data Section:** Holds initialized data used by the program. Its size varies depending on the data in the binary.
-
-- **Text Section:** Contains executable code of the program. Its size varies based on the code written.
-
-- **Symbol Table Section:** Stores information about symbols defined or referenced by the program (e.g., function and variable names, addresses, and attributes). Each entry follows the ELF64_Sym structure. The symbol table size varies depending on the number of symbols.
-
-- **String Table Section:** Stores symbol names, section names, and other string data referenced by the binary. It contains substrings grouped into a single string.
-
-Please note that the actual sizes and structures can vary depending on the specific binary format and the file contents. The above representation is a general overview of components typically found in a 64-bit ELF file.
-
-Since we are working with an **EIP-independent** program (it doesn’t rely on specific memory addresses or offsets relative to the EIP register), it is more reliable across different environments.
-
-Please check the `man` page for ELF for more details.
-
-### **ELF Infection**
-
-In the context of packers and unpackers, the **stub** and the **unpacker** are closely related but not synonymous.
-
-- **Stub:** A small piece of code inserted into the packed binary. Its purpose is to perform the initial processing and setup necessary for the unpacker to execute. The stub typically contains minimal functionality and is responsible for locating and executing the unpacker code.
-
-- **Unpacker:** The actual code responsible for unpacking or decrypting the packed portions of the binary. It extracts the original, unpacked code and data, restoring the binary to its original state.
-
-#### **Inserting Stub or Additional Code into ELF File:**
-Here are a few common approaches for inserting a stub or additional code into an ELF file:
-
-1. **At the End of the File/Segment/Section:** This method extends the file size, writing new code at the end and shifting existing elements.
-
-2. **In Padding Areas:** ELF files often contain padding areas between sections or segments, which are typically filled with zeroes. These unused spaces can be utilized for the stub code. However, padding may not always be available or large enough, depending on the specific ELF structure.
-
-3. **Reserved Sections:** If the ELF file has reserved or unused sections, these can be repurposed to hold the stub code. Care must be taken to ensure that the section does not interfere with the ELF file’s original functionality.
-
-Our program uses **padding injection** by default. If the padding area is too small for the stub, we use the first approach (inserting the stub after the executable segment).
-
-### **Data Encryption**
-
-Our keygen function generates a random encryption key of a specified width using a given character set. It seeds the random number generator with the current time and selects random characters from the character set to build the key.
-
-We have enhanced our XOR-based encryption algorithm by incorporating an **additive cipher**. The additive cipher (or Caesar cipher) shifts each character of the plaintext by a fixed amount (the key) before applying the XOR operation. This additional step increases the complexity of the encryption process.
-
-## **Notes**
-```asm
-lodsb             ; Load the next byte of the message into AL
-xor al, key       ; XOR the byte with the key
-stosb             ; Store the encrypted byte back into memory
-loop encrypt_loop ; Repeat for the entire message
-
-lodsb:
-    lodsb stands for "load byte from source into AL."
-    It loads a byte from the memory location pointed to by the ESI register into AL.
-    After loading, the ESI register increments or decrements based on the direction flag (DF).
-
-stosb
