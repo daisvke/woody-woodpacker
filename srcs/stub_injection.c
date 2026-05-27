@@ -1,6 +1,5 @@
 #include "ww.h"
 #include "stub.h"
-#include "stub_virus.h"
 
 // This function is responsible for adjusting various offsets and sizes
 // in the program headers, and section headers after inserting the stub code.
@@ -49,7 +48,7 @@ void ww_generate_new_file_with_parasite(Elf64_Off injection_offset, size_t sizeo
 	// Copy the stub with the padding
 	ww_memcpy(
 		file_with_stub + injection_offset,
-		g_modes & WW_SHELLCODE_DEFAULT ? g_stub : g_stub_virus,
+		g_stub,
 		sizeof_stub
 		);
 	// Unmap the file from memory
@@ -84,9 +83,9 @@ void ww_padding_injection(Elf64_Off injection_offset, size_t sizeof_stub)
 	// Copy the hex formatted stub to the injection point in the mapped data
 	ww_memcpy(
 		g_mapped_data + injection_offset,
-		g_modes & WW_SHELLCODE_DEFAULT ? g_stub : g_stub_virus,
+		g_stub,
 		sizeof_stub
-		);
+	);
 }
 
 // This is one of the injection options. It does it by injecting the stub at
@@ -104,8 +103,7 @@ void ww_shifting_injection(Elf64_Ehdr *elf_header, Elf64_Off injection_offset, s
 
 void ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key)
 {
-	size_t		sizeof_stub = g_modes & WW_SHELLCODE_DEFAULT ?
-							sizeof(g_stub) : sizeof(g_stub_virus);
+	size_t		sizeof_stub = sizeof(g_stub);
 
 	/* The injection offset is the sum of the executable LOAD segment's offset
 	 *  and the file size of that segment, which equals to the end of that segment.

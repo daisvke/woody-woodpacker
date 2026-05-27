@@ -35,7 +35,7 @@ STUB_SRCS_FILES		= $(notdir $(wildcard $(STUB_SRCS_DIR)*.s))
 INCS 				= errors.h ww.h $(STUB_HDRS)
 # Eeach one of these headers contains a different shellcode.
 # Both headers are created, but only one will be used, according to the commandline options
-STUB_HDRS			= stub.h stub_virus.h
+STUB_HDRS			= stub.h
 
 # **************************************************************************** #
 #       OBJ                                                                    #

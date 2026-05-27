@@ -50,10 +50,6 @@ enum ww_eg_modes
     // Insert at the end of the .text segment
     // then shift all the data coming after
     WW_INJECTREG_SHIFT = (1 << 3),
-    // Choose the default shellcode
-    WW_SHELLCODE_DEFAULT = (1 << 4),
-    // Choose a virus shellcode
-    WW_SHELLCODE_VIRUS = (1 << 5),
 };
 
 typedef struct ww_s_patch

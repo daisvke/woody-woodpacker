@@ -15,8 +15,8 @@ This project is provided for educational and research purposes only.
 # Make and run the packer with the default options, then run the packed binary, all with valgrind
 make run
 
-# Run the packer with verbose mode, padding injection, and virus mode on, then run the binary
-./woody_woodpacker /bin/ls -v -i=p -s=v  && ./woody
+# Run the packer with verbose mode, padding injection, and then run the binary
+./woody_woodpacker /bin/ls -v -i=p && ./woody
 ```
 
 ### Useful commands
@@ -156,11 +156,6 @@ Our program uses **padding injection** by default. If the padding area is too sm
 Our keygen function generates a random encryption key of a specified width using a given character set. It seeds the random number generator with the current time and selects random characters from the character set to build the key.
 
 We have enhanced our XOR-based encryption algorithm by incorporating an **additive cipher**. The additive cipher (or Caesar cipher) shifts each character of the plaintext by a fixed amount (the key) before applying the XOR operation. This additional step increases the complexity of the encryption process.
-
-### **Payload**
-
-By default, the payload is a string displayed before the execution of the target program. However, we’ve added a **‘virus’ mode**, which is a quine binary executed by the shellcode. A quine is a piece of code that replicates itself in the current directory.
-
 
 ## **Notes**
 ```asm
