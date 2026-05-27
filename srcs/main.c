@@ -20,8 +20,17 @@ int main(int argc, char *argv[])
 	 * the file data.
 	 */
     ww_map_file_into_memory(filename);
+
+	// Abort if the current target already contains our signature
+    search_in_binary((char *)g_mapped_data, g_file_size, WW_SIGNATURE, strlen(WW_SIGNATURE));
+
 	// Process the encryption, the injection, etc
     ww_process_mapped_data();
+
 	// Write the processed data back into the file
     ww_write_processed_data_to_file();
+
+	printf(WW_GREEN_COLOR "Successfully packed the binary!\n" WW_RESET_COLOR);
+
+	return EXIT_SUCCESS;
 }

@@ -1,43 +1,46 @@
 #ifndef WW_WOODY_WOODPACKER_H
-#define WW_WOODY_WOODPACKER_H
+# define WW_WOODY_WOODPACKER_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <sys/mman.h>   // For mapping
-#include <elf.h>        // For ELF header
-#include <string.h>
-#include <time.h>       // For rand & srand (encryption key generation)
-#include "errors.h"
+# include <stdio.h>
+# include <stdlib.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <stdint.h>
+# include <sys/mman.h>   // For mapping
+# include <elf.h>        // For ELF header
+# include <string.h>
+# include <time.h>       // For rand & srand (encryption key generation)
+# include "errors.h"
 
 /*-------------------------------- Colors ---------------------------------*/
 
 /* Text colors */
-#define WW_RED_COLOR       "\033[31m"
-#define WW_GREEN_COLOR     "\033[32m"
-#define WW_YELLOW_COLOR    "\033[33m"
-#define WW_RESET_COLOR     "\033[0m"
+# define WW_RED_COLOR       "\033[31m"
+# define WW_GREEN_COLOR     "\033[32m"
+# define WW_YELLOW_COLOR    "\033[33m"
+# define WW_RESET_COLOR     "\033[0m"
 
 /* Background colors */
-#define WW_RESET_BG_COLOR  "\033[49m"
+# define WW_RESET_BG_COLOR  "\033[49m"
 
 /*------------------------ Defines, enum, struct --------------------------*/
 
 // Name of the packed binary produced by the packer
-#define WW_PACKED_FILENAME "woody"
+# define WW_PACKED_FILENAME "woody"
 // Error code
-#define WW_ERROR           1
+# define WW_ERROR           1
 // Length of the key used by the encryptor
-#define WW_KEYSTRENGTH     32
+# define WW_KEYSTRENGTH     32
 // Common value representing the size of a memory page in many computer systems
-#define WW_PAGE_SIZE       4096
+# define WW_PAGE_SIZE       4096
 
 // Charset used for the encryption key
-#define WW_KEYCHARSET      "abcdefghijklmnopqrstuvwxyz" \
+# define WW_KEYCHARSET      "abcdefghijklmnopqrstuvwxyz" \
                             "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
                             "0123456789"
+
+# define WW_SIGNATURE       "....WOODY...."
+
 enum ww_eg_modes
 {
     // Display detailed notifications
@@ -81,7 +84,9 @@ void        ww_process_mapped_data(void);
 void        ww_write_processed_data_to_file(void);
 void        ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key);
 void        xor_with_additive_cipher( \
-    void *key, size_t key_length, void *data, size_t data_length, int mode);
+                void *key, size_t key_length, void *data, size_t data_length, int mode);
 char        *ww_keygen(const char *_charset, size_t strength);
+void        search_in_binary( \
+                const char *data, size_t data_size, const char *substring, size_t substring_length);
 
 #endif

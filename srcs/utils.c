@@ -27,3 +27,11 @@ void ww_print_error_and_exit(enum ww_e_errors err_code)
 
     exit(1);
 }
+
+// Function to search for a substring in binary data
+void search_in_binary(const char *data, size_t data_size, const char *substring, size_t substring_length) {
+    for (size_t i = 0; i <= data_size - substring_length; i++) {
+        if (memcmp(data + i, substring, substring_length) == 0)
+            ww_print_error_and_exit(WW_ERR_SIGNATURE_ALREADY_EXISTS);
+    }
+}

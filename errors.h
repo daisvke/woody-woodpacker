@@ -22,6 +22,7 @@
 	"Corrupted ELF header", \
 	"Unrecognized option", \
 	"Cannot inject into padding: not sufficient padding space",\
+	"Cannot pack: signature already exists inside binary"\
 };
 
 // Error codes
@@ -41,7 +42,8 @@ enum	ww_e_errors
 	WW_ERR_CORRUPTPHDR,
 	WW_ERR_CORRUPTEHDR,
 	WW_ERR_UNRECOGNIZEDOPT,
-	WW_ERR_CANNOTINJECTPADDING
+	WW_ERR_CANNOTINJECTPADDING,
+	WW_ERR_SIGNATURE_ALREADY_EXISTS
 };
 
 void	ww_print_error_and_exit(enum ww_e_errors err_code);

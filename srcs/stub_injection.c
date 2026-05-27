@@ -79,7 +79,7 @@ void ww_patch_stub(char *key, const ww_t_patch *patch, Elf64_Off injection_offse
 void ww_padding_injection(Elf64_Off injection_offset, size_t sizeof_stub)
 {
 	if (g_modes & WW_VERBOSE)
-		printf(WW_GREEN_COLOR "The shellcode is injected into the executable "
+		printf(WW_GREEN_COLOR "The shellcode will be injected into the executable "
 			   "segment's padding.\n" WW_RESET_COLOR);
 	// Copy the hex formatted stub to the injection point in the mapped data
 	ww_memcpy(
