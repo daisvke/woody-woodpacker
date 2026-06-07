@@ -242,7 +242,7 @@ make # Build project
 make run
 
 # Example: run the packer with verbose mode, padding injection mode, then run the binary
-./woody_woodpacker /bin/ls -i p -s v  && ./woody
+./woody_woodpacker /bin/ls -i p -v  && ./woody
 
 ```
 
