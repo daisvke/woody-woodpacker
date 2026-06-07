@@ -9,7 +9,7 @@ _start:
 	lea		r8, [rel _start]              				; Get _start address
 	mov		r9, r8                     					; Copy r8 to r9
 	sub		r9, [r8 + main_entry_offset_from_stub] 		; Compute main entry address into r9
-
+	
 	; Explanation:
 	; 
 	; The reason for adding r8 to obtain variable values is due to the use of position

@@ -1,20 +1,53 @@
 #include "ww.h"
 
-static void	ww_process_segments(Elf64_Ehdr *elf_header, char *key)
+int ww_get_executable_segment_index(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header)
 {
-	Elf64_Phdr *program_header = (Elf64_Phdr *)(g_mapped_data + elf_header->e_phoff);
-
 	for (size_t i = 0; i < elf_header->e_phnum; i++)
-	{
 		// Check if the segment contains the .text section
-		if (program_header[i].p_type == PT_LOAD && // If phdr is loadable
-			(program_header[i].p_flags & PF_X))    // If phdr is executable
-		{
-			// If .text, then proceed to injection, otherwise return
-			ww_inject_stub(elf_header, &program_header[i], key);
-			return;
-		}
-	}
+		if (program_header[i].p_type == PT_LOAD &&	// If phdr is loadable
+			(program_header[i].p_flags & PF_X) &&	// If phdr is executable
+			(program_header[i].p_flags & PF_R))		// If phdr is readable
+			return i;
+	return -1;
+}
+
+/*
+ * The function returns the closest PT_LOAD segment whose p_offset
+ * is strictly greater than the injection point.
+ *
+ * If multiple segments satisfy this condition, the one with the smallest
+ * p_offset is selected (i.e. the immediate next segment in file layout).
+ */
+Elf64_Phdr *ww_get_next_load_segment_by_offset(
+    Elf64_Ehdr *elf_header,
+    Elf64_Phdr *program_headers,
+    Elf64_Off injection_offset)
+{
+    Elf64_Phdr *closest = NULL;
+
+    // Iterate over all program headers in the ELF binary
+    for (size_t i = 0; i < elf_header->e_phnum; i++)
+    {
+        // Only consider LOAD segments (mapped into memory at runtime)
+        if (program_headers[i].p_type != PT_LOAD)
+            continue;
+
+        /*
+         * We only care about segments that come after the injection point
+         * in the file layout.
+         */
+        if (program_headers[i].p_offset > injection_offset)
+        {
+            /*
+             * Select the closest segment after the injection point.
+             * This ensures we find the immediate next boundary, not a distant one.
+             */
+            if (!closest || program_headers[i].p_offset < closest->p_offset)
+                closest = &program_headers[i];
+        }
+    }
+
+    return closest;
 }
 
 Elf64_Shdr	*get_section_header(void *f, int _idx)
@@ -69,10 +102,12 @@ void	ww_process_mapped_data()
 	Elf64_Shdr	*txt_shdr = ww_get_text_section_header();
 	if (!txt_shdr) ww_print_error_and_exit(WW_ERR_NOTEXTSEC);
 
-	printf("\n" " > STARTING ENCRYPTION OF THE .TEXT SECTION...\n\n");
+	printf(WW_YELLOW_COLOR "\n▶ STARTING ENCRYPTION OF THE .TEXT SECTION...\n\n" WW_RESET_COLOR);
+
 	// Generate the key that will be used for the encryption
 	char *key = ww_keygen(WW_KEYCHARSET, WW_KEYSTRENGTH);
-	printf("Generated random key => " WW_YELLOW_COLOR "%s\n", key);
+	printf(WW_YELLOW_COLOR "▶ GENERATED RANDOM KEY\n" WW_RESET_COLOR);
+	printf("   %s\n", key);
 
 	/* Encrypt the .text section before inserting the parasite code.
 	 * The section will be decrypted by the latter during execution.
@@ -86,8 +121,15 @@ void	ww_process_mapped_data()
 		0 // Encrypt mode
 	);
 
-	printf(WW_GREEN_COLOR "Done!\n\n" WW_RESET_COLOR);
+	printf(WW_YELLOW_COLOR "\n▶ STARTING SHELLCODE INJECTION...\n\n" WW_RESET_COLOR);
 
-	printf(" > STARTING PARASITE INJECTION...\n\n");
-	ww_process_segments(elf_header, key);
+	Elf64_Phdr	*program_header = (Elf64_Phdr *)(g_mapped_data + elf_header->e_phoff);
+	int			executable_segment_index = ww_get_executable_segment_index(elf_header, program_header);
+
+	if (executable_segment_index == -1)
+		ww_print_error_and_exit(WW_ERR_EXEC_SEGMENT_NOT_FOUND);
+
+	ww_inject_stub(
+		elf_header, &program_header[executable_segment_index], key
+	);
 }

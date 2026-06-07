@@ -11,7 +11,9 @@
 * [Entry Point Redirection](#entry-point-redirection)
 * [Encryption System](#encryption-system)
 * [Commands](#commands)
+* [Automated Test Suite](#automated-test-suite)
 * [Debug Tools](#debug-tools)
+* [Compatibility Notes](#compatibility-notes)
 
 ---
 
@@ -240,7 +242,7 @@ make # Build project
 make run
 
 # Example: run the packer with verbose mode, padding injection mode, then run the binary
-./woody_woodpacker /bin/ls -i=p -s=v  && ./woody
+./woody_woodpacker /bin/ls -i p -s v  && ./woody
 
 ```
 
@@ -270,8 +272,8 @@ Displays detailed information about:
 Attempts to inject stub into existing executable segment padding.
 
 ```bash
--i=p
---injection-type=padding
+-i p
+--injection-type padding
 ```
 
 * safest mode
@@ -285,13 +287,69 @@ Attempts to inject stub into existing executable segment padding.
 Forces structural modification of ELF when padding is insufficient or explicitly selected.
 
 ```bash
--i=s
---injection-type=shift
+-i s
+--injection-type shift
 ```
 
 * rewrites ELF layout
 * shifts headers and segments
 * guarantees injection success
+
+---
+
+Here’s a clean README section you can drop in, matching your project tone and that test script:
+
+---
+
+## Automated Test Suite
+
+The project includes a simple validation script to test packing behavior across multiple ELF binaries.
+
+It builds the project, runs the packer on a set of sample binaries, and verifies execution output consistency.
+
+### What the test does
+
+For each binary in the `resources/` directory, the script:
+
+* Builds the project using `make`
+* Executes the packer in both modes:
+
+  * `-i s` (shift injection mode)
+  * `-i p` (padding injection mode)
+* Runs the resulting packed binary (`./woody`)
+* Checks execution output for the success signature:
+
+  ```
+  ....WOODY....
+  ```
+* Reports results per binary and mode:
+
+  * 🟢 PASS → correct execution detected
+  * 🔴 FAIL → missing or invalid output
+
+---
+
+### How to run tests
+
+```bash
+chmod +x test.sh
+./test.sh
+```
+
+---
+
+### Expected structure
+
+```
+project/
+├── resources/
+│   ├── bin1
+│   ├── bin2
+│   └── ...
+├── woody_woodpacker
+├── woody
+└── test.sh
+```
 
 ---
 
@@ -316,9 +374,50 @@ x/16xw 0x401040
 # Add breakpoint at relative address 11ad if base address is 0x4011ad
 b *0x4011ad
 
+# Show ELF entrypoint
+gdb ./woody
+starti
+info files
+info proc map
+
 # Produce a trace trap that stops the execution at the position (useful when debugging)
 int3
 ```
+
+# Compatibility Notes
+
+While the tool works on many standard Linux x86-64 ELF binaries, some binaries may fail to pack or may become unstable after packing.
+
+## Why some binaries fail
+
+Not all ELF binaries have the same layout characteristics. The shifting injection mode depends on being able to safely:
+
+* Extend a `PT_LOAD` segment (`p_filesz` / `p_memsz`)
+* Shift all subsequent program and section headers correctly
+* Preserve valid page-aligned memory mappings between segments
+* Maintain consistent execution flow after entry point redirection
+
+Some binaries cannot satisfy these conditions safely due to:
+
+* **Tight segment packing**
+
+  * No sufficient contiguous space between `PT_LOAD` segments
+  * Stub overflow crosses into adjacent mapped regions
+
+* **Complex or hardened ELF layouts**
+
+  * Multiple overlapping or tightly coupled `PT_LOAD` segments
+  * Special-purpose loader assumptions (e.g. glibc, ld-linux optimizations)
+
+* **RELRO / TLS / dynamic loader constraints**
+
+  * `GNU_RELRO` and `DYNAMIC` segments may break if shifted incorrectly
+  * Runtime loader expects strict offsets for relocation and linking
+
+* **PIE + ASLR edge cases**
+
+  * Some binaries rely on exact relative layout between segments
+  * Small changes in layout can invalidate runtime assumptions
 
 # **Bonus ideas**
 - 32-bit support

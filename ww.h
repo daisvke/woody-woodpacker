@@ -20,9 +20,6 @@
 # define WW_YELLOW_COLOR    "\033[33m"
 # define WW_RESET_COLOR     "\033[0m"
 
-/* Background colors */
-# define WW_RESET_BG_COLOR  "\033[49m"
-
 /*------------------------ Defines, enum, struct --------------------------*/
 
 // Name of the packed binary produced by the packer
@@ -52,6 +49,13 @@ enum ww_eg_modes
     WW_INJECTREG_SHIFT = (1 << 3),
 };
 
+typedef struct ww_s_injection_values
+{
+    Elf64_Addr  injection_addr;
+    Elf64_Off   injection_offset;
+    int         padding_size;
+}   ww_t_injection_value;
+
 typedef struct ww_s_patch
 {
     Elf64_Off   main_entry_offset_from_stub;   // main entry from the original file
@@ -72,17 +76,21 @@ size_t      ww_strlen(const char *s);
 void        *ww_memset(void *src, int c, size_t n);
 void        *ww_memcpy(void *dest, const void *src, size_t n);
 int         ww_strncmp(const char *s1, const char *s2, size_t n);
-void        ww_parse_argv(char *argv[]);
-char        *ww_get_filename(char *argv[]);
+void        ww_parse_argv(int argc, char *argv[]);
+char        *ww_get_filename(int argc, char *argv[]);
 Elf64_Shdr  *ww_get_text_section_header(void);
+int         ww_get_executable_segment_index(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header);
+Elf64_Phdr *ww_get_next_load_segment_by_offset(
+    Elf64_Ehdr *elf_header, Elf64_Phdr *program_headers, Elf64_Off injection_offset);
 void        ww_map_file_into_memory(const char *filename);
 void        ww_process_mapped_data(void);
 void        ww_write_processed_data_to_file(void);
-void        ww_inject_stub(Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key);
+void        ww_inject_stub( \
+    Elf64_Ehdr *elf_header, Elf64_Phdr *program_header, char *key);
 void        xor_with_additive_cipher( \
                 void *key, size_t key_length, void *data, size_t data_length, int mode);
 char        *ww_keygen(const char *_charset, size_t strength);
 void        search_str_in_binary( \
-                const char *data, size_t data_size, const char *substring, size_t substring_length);
+    const char *data, size_t data_size, const char *substring, size_t substring_length);
 
 #endif

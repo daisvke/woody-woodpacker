@@ -91,3 +91,31 @@ fclean: clean
 	rm -f $(NAME) $(OUTFILE)
 
 re: fclean all
+
+# **************************************************************************** #
+#       DOCKER                                                                 #
+# **************************************************************************** #
+
+HOST_NAME = ww
+IMAGE_NAME = ww-image
+
+docker: build_docker run_docker
+
+build_docker:
+	docker build -t $(IMAGE_NAME) .
+
+run_docker:
+	@if docker ps -a --format '{{.Names}}' | grep -q "^$(HOST_NAME)$$"; then \
+		echo "$(HOST_NAME) already exists"; \
+	else \
+		docker run -dit \
+			--name $(HOST_NAME) \
+			-v ./:/shared \
+			$(IMAGE_NAME); \
+	fi
+
+dclean:
+	-@docker rm -f $(HOST_NAME)
+	-@docker rmi -f $(IMAGE_NAME)
+
+dre: dclean docker

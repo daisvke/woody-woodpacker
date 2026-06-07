@@ -1,17 +1,16 @@
 #include "ww.h"
 
-unsigned char   *g_mapped_data;
-Elf64_Off       g_file_size;
-uint16_t        g_modes;
+unsigned char   *g_mapped_data = NULL;
+Elf64_Off       g_file_size = 0;
+uint16_t        g_modes = 0;
 
 int main(int argc, char *argv[])
 {
-	(void)argc;
 	// Parse the arguments given through the commannd line
-    ww_parse_argv(argv);
+    ww_parse_argv(argc, argv);
 
 	// Get the target binary filename from the given arguments
-	char *filename = ww_get_filename(argv);
+	char *filename = ww_get_filename(argc, argv);
 	if (!filename)
 		ww_print_error_and_exit(WW_ERR_BADARGNBR);
 
@@ -30,7 +29,7 @@ int main(int argc, char *argv[])
 	// Write the processed data back into the file
     ww_write_processed_data_to_file();
 
-	printf(WW_GREEN_COLOR "Successfully packed the binary!\n" WW_RESET_COLOR);
+	printf(WW_GREEN_COLOR "\n▶ SUCCESSFULLY PACKED THE BINARY!\n\n" WW_RESET_COLOR);
 
 	return EXIT_SUCCESS;
 }

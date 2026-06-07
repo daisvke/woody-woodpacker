@@ -22,7 +22,10 @@
 	"Corrupted ELF header", \
 	"Unrecognized option", \
 	"Cannot inject into padding: not sufficient padding space",\
-	"Cannot pack: signature already exists inside binary"\
+	"Cannot pack: signature already exists inside binary",\
+	"Executable segment not found in program header", \
+	"No LOAD segment found after the executable segment! " \
+		"Cannot compute injection padding. Aborting..." \
 };
 
 // Error codes
@@ -43,7 +46,9 @@ enum	ww_e_errors
 	WW_ERR_CORRUPTEHDR,
 	WW_ERR_UNRECOGNIZEDOPT,
 	WW_ERR_CANNOTINJECTPADDING,
-	WW_ERR_SIGNATURE_ALREADY_EXISTS
+	WW_ERR_SIGNATURE_ALREADY_EXISTS,
+	WW_ERR_EXEC_SEGMENT_NOT_FOUND,
+	WW_ERR_NEXT_LOAD_SEGMENT_NOT_FOUND
 };
 
 void	ww_print_error_and_exit(enum ww_e_errors err_code);
